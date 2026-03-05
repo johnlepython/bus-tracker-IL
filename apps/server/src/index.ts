@@ -40,6 +40,7 @@ await redis.subscribe("journeys", async (message) => {
 	try {
 		const payload = JSON.parse(message);
 		if (!Array.isArray(payload)) throw new Error("Payload is not an array");
+		console.log(`► Received journey batch: ${payload.length} journeys`);
 		vehicleJourneys = payload.flatMap((entry) => {
 			const parsed = vehicleJourneySchema.safeParse(entry);
 			if (!parsed.success) {
@@ -52,8 +53,9 @@ await redis.subscribe("journeys", async (message) => {
 			}
 			return parsed.data;
 		});
+		console.log(`► Validated ${vehicleJourneys.length} journeys`);
 	} catch (error) {
-		console.error(error);
+		console.error("► Error processing journeys batch:", error);
 		return;
 	}
 

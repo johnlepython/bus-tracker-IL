@@ -25,7 +25,7 @@ setInterval(() => {
 			sweptJourneys += 1;
 		}
 	}
-	console.log("► Swept %d outdated vehicle journeys.", sweptJourneys);
+	console.log("► Swept %d outdated vehicle journeys. Store now has %d journeys.", sweptJourneys, journeyStore.size);
 }, 60_000);
 
 export type JourneyStore = typeof journeyStore;

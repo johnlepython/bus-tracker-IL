@@ -18,6 +18,8 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 
 	const vehicleJourneysByNetwork = Map.groupBy(vehicleJourneys, (vehicleJourney) => vehicleJourney.networkRef);
 
+	let totalStored = 0;
+
 	for (const [networkRef, vehicleJourneys] of vehicleJourneysByNetwork) {
 		const network = await importNetwork(networkRef);
 
@@ -52,6 +54,7 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 
 		const registerableActivities: DisposeableVehicleJourney[] = [];
 		const vehicleOperatorUpdates = new Map<number, number>();
+		let storedInNetwork = 0;
 
 		for (const vehicleJourney of vehicleJourneys) {
 			const timeSince = Temporal.Now.instant().since(vehicleJourney.updatedAt);
@@ -76,6 +79,8 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 			};
 
 			journeyStore.set(disposeableJourney.id, disposeableJourney);
+			storedInNetwork++;
+			totalStored++;
 
 			if (typeof vehicleJourney.vehicleRef !== "undefined") {
 				const vehicle = vehicles.get(vehicleJourney.vehicleRef);
@@ -103,5 +108,8 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 		}
 
 		registerActivities(registerableActivities);
+		console.log(`► Processed ${networkRef}: Stored ${storedInNetwork} journeys, ${registerableActivities.size} with vehicle registrations`);
 	}
+
+	console.log(`► Batch complete: Stored ${totalStored} total journeys across all networks`);
 }
