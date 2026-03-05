@@ -54,12 +54,11 @@ await redis.subscribe("journeys", async (message) => {
 			return parsed.data;
 		});
 		console.log(`► Validated ${vehicleJourneys.length} journeys`);
-	} catch (error) {
-		console.error("► Error processing journeys batch:", error);
-		return;
-	}
 
-	await handleVehicleBatch(vehicleJourneys);
+		await handleVehicleBatch(vehicleJourneys);
+	} catch (error) {
+		console.error("► Error processing journey batch:", error);
+	}
 });
 
 console.log("► Listening on port %d.\n", port);
