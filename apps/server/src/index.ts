@@ -34,33 +34,37 @@ const redis = createClient({
 redis.on("error", (err) => {
 	console.error("► Redis client error:", err);
 });
-redis.on("message", async (message, channel) => {
+redis.on("message", (message, channel) => {
 	console.log("► Redis message received on channel '%s' (length: %d)", channel, String(message).length);
-	let didWarn = false;
-	let vehicleJourneys: VehicleJourney[];
+	
+	// Handle async operations without blocking
+	(async () => {
+		let didWarn = false;
+		let vehicleJourneys: VehicleJourney[];
 
-	try {
-		const payload = JSON.parse(message);
-		if (!Array.isArray(payload)) throw new Error("Payload is not an array");
-		console.log(`► Received journey batch: ${payload.length} journeys`);
-		vehicleJourneys = payload.flatMap((entry) => {
-			const parsed = vehicleJourneySchema.safeParse(entry);
-			if (!parsed.success) {
-				if (!didWarn) {
-					console.warn(`Rejected object(s) from journeys channel, sample:`, entry);
-					console.error(parsed.error);
-					didWarn = true;
+		try {
+			const payload = JSON.parse(message);
+			if (!Array.isArray(payload)) throw new Error("Payload is not an array");
+			console.log(`► Received journey batch: ${payload.length} journeys`);
+			vehicleJourneys = payload.flatMap((entry) => {
+				const parsed = vehicleJourneySchema.safeParse(entry);
+				if (!parsed.success) {
+					if (!didWarn) {
+						console.warn(`Rejected object(s) from journeys channel, sample:`, entry);
+						console.error(parsed.error);
+						didWarn = true;
+					}
+					return [];
 				}
-				return [];
-			}
-			return parsed.data;
-		});
-		console.log(`► Validated ${vehicleJourneys.length} journeys`);
+				return parsed.data;
+			});
+			console.log(`► Validated ${vehicleJourneys.length} journeys`);
 
-		await handleVehicleBatch(vehicleJourneys);
-	} catch (error) {
-		console.error("► Error processing journey batch:", error);
-	}
+			await handleVehicleBatch(vehicleJourneys);
+		} catch (error) {
+			console.error("► Error processing journey batch:", error);
+		}
+	})();
 });
 await redis.connect();
 await redis.subscribe("journeys");
