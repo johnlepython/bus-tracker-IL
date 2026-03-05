@@ -40,10 +40,8 @@ const subscriber = createClient({
 subscriber.on("error", (err) => {
 	console.error("► Redis subscriber error:", err);
 });
-subscriber.on("message", (message, channel) => {
-	console.log("► Redis message type: %s, channel: %s, length: %d", typeof message, channel, Buffer.from(message).length);
-	const messageStr = typeof message === 'string' ? message : Buffer.from(message).toString('utf-8');
-	console.log("► Message preview: %s", messageStr.substring(0, 100));
+subscriber.on("message", (channel, message) => {
+	console.log("► Received message on channel: %s", channel);
 	
 	// Handle async operations without blocking
 	(async () => {
@@ -51,8 +49,7 @@ subscriber.on("message", (message, channel) => {
 		let vehicleJourneys: VehicleJourney[];
 
 		try {
-			const messageStr = typeof message === 'string' ? message : Buffer.from(message).toString('utf-8');
-			const payload = JSON.parse(messageStr);
+			const payload = JSON.parse(message);
 			if (!Array.isArray(payload)) throw new Error("Payload is not an array");
 			console.log(`► Received journey batch: ${payload.length} journeys`);
 			vehicleJourneys = payload.flatMap((entry) => {
@@ -76,11 +73,7 @@ subscriber.on("message", (message, channel) => {
 	})();
 });
 await subscriber.connect();
-// Provide callback for TypeScript, but actual handling is via 'message' event
-await subscriber.subscribe("journeys", (message, channel) => {
-	// This callback might be required for proper subscriber mode initialization
-	// Actual handling is done via the 'message' event listener above
-});
+await subscriber.subscribe("journeys");
 
 console.log("► Listening on port %d.\n", port);
 serve({ fetch: hono.fetch, port });
