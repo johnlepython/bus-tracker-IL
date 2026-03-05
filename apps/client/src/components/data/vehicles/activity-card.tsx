@@ -35,11 +35,11 @@ export function ActivityCard({ activity }: Readonly<ActivityCardProps>) {
 			<p className="flex-1 my-auto text-2xl">
 				{ongoing ? (
 					<>
-						depuis <span className="font-bold tabular-nums">{dayjs(activity.startedAt).format("HH:mm")}</span>
+						since <span className="font-bold tabular-nums">{dayjs(activity.startedAt).format("HH:mm")}</span>
 					</>
 				) : (
 					<>
-						<span className="font-bold tabular-nums">{dayjs(activity.startedAt).format("HH:mm")}</span> à{" "}
+						<span className="font-bold tabular-nums">{dayjs(activity.startedAt).format("HH:mm")}</span> to{" "}
 						<span className="font-bold tabular-nums">{dayjs(activity.updatedAt).format("HH:mm")}</span>
 					</>
 				)}

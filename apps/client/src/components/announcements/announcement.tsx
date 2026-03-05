@@ -27,7 +27,7 @@ export function AnnouncementContent({ announcement }: Readonly<AnnouncementProps
 				// biome-ignore lint/security/noDangerouslySetInnerHtml: content is controlled
 				<div dangerouslySetInnerHTML={{ __html: announcement.content }} />
 			) : (
-				<p className="text-muted-foreground">Cette actualité ne contient pas de détails.</p>
+				<p className="text-muted-foreground">This announcement contains no details.</p>
 			)}
 			{(announcement.publishedAt !== null || announcement.updatedAt !== announcement.createdAt) && (
 				<p className="flex justify-end mt-3 text-muted-foreground text-sm">

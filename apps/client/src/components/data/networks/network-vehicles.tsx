@@ -235,25 +235,25 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 									<SelectItem value="number-asc">
 										<div className="flex items-center gap-2">
 											<ArrowDown01Icon className="size-4" />
-											<span>N° véhicule ↑</span>
+											<span>Vehicle # ↑</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="number-desc">
 										<div className="flex items-center gap-2">
 											<ArrowDown10Icon className="size-4" />
-											<span>N° véhicule ↓</span>
+											<span>Vehicle # ↓</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="line-asc">
 										<div className="flex items-center gap-2">
 											<ArrowDownAZIcon className="size-4" />
-											<span>N° ligne ↑</span>
+											<span>Line # ↑</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="line-desc">
 										<div className="flex items-center gap-2">
 											<ArrowDownZAIcon className="size-4" />
-											<span>N° ligne ↓</span>
+											<span>Line # ↓</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="activity">

@@ -30,7 +30,7 @@ export function VehicleNextStops({ calls }: Readonly<NextStopsProps>) {
 										() =>
 											({
 												className: "bg-red-600 dark:bg-red-700 font-bold text-white",
-												content: "Arrêt non desservi",
+												content: "Stop not served",
 											}) as const,
 									)
 									.with(
