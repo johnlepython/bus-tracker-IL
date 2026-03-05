@@ -21,13 +21,17 @@ echo "📤 Pushing to GitHub..."
 git push origin "$BRANCH" || true
 
 # SSH commands to execute on VPS
-ssh "$VPS_HOST" << EOSSH
+ssh "$VPS_HOST" << 'EOSSH'
+    # Load NVM
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    
     set -e
     echo "📥 Pulling latest changes..."
-    cd $VPS_PATH
+    cd /home/debian/bus-tracker-IL
     git fetch origin
-    git checkout $BRANCH
-    git pull origin $BRANCH
+    git checkout dev
+    git pull origin dev
     
     echo "📦 Installing dependencies..."
     pnpm install
