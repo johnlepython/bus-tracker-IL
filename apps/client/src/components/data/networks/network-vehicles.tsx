@@ -179,19 +179,19 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 				<>
 					<div
 						className={cn(
-							"grid gap-1 mt-2",
-							hasArchivedVehicles ? "grid-cols-[1fr_4.5rem_2.3rem]" : "grid-cols-[1fr_4.5rem]",
+							"grid gap-2 mt-2",
+							hasArchivedVehicles ? "grid-cols-[1fr_10rem_2.3rem]" : "grid-cols-[1fr_10rem]",
 						)}
 					>
 						{/* Filters */}
 						<div className="flex flex-col gap-1">
 							<Label className="inline-flex items-center gap-1" htmlFor="filter">
-								<FilterIcon size={16} /> Filtrer par
+							<FilterIcon size={16} /> Filter by
 							</Label>
 							<div className="flex gap-1">
 								{availableNetworkTypeFilters.length > 2 && (
 									<Select value={type} onValueChange={(newType) => updateSearchParam("type", newType)}>
-										<SelectTrigger aria-label="Type" className="h-10 w-[4.5rem]">
+										<SelectTrigger aria-label="Type" className="h-10 min-w-[5rem]">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
@@ -203,18 +203,18 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 										</SelectContent>
 									</Select>
 								)}
-								<div className="flex flex-1 gap-1 max-w-96">
+								<div className="flex flex-1 gap-1">
 									{network.operators.length > 0 && (
 										<Select
 											value={operatorId}
 											onValueChange={(newOperatorId) => updateSearchParam("operatorId", newOperatorId)}
 										>
-											<SelectTrigger aria-label="Opérateur" className="h-10 w-1/2">
+											<SelectTrigger aria-label="Operator" className="h-10 min-w-[6rem]">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="ALL">
-													<span className="text-muted-foreground">Opérateur</span>
+													<span className="text-muted-foreground">Operator</span>
 												</SelectItem>
 												{network.operators
 													.toSorted((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
@@ -227,8 +227,8 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 										</Select>
 									)}
 									<Input
-										className="h-10 w-1/2"
-									placeholder="number or designation"
+										className="h-10 flex-1"
+										placeholder="number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}
 									/>
@@ -238,41 +238,41 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 						{/* Sort */}
 						<div className="flex flex-col gap-1">
 							<Label className="inline-flex items-center gap-1" htmlFor="sort">
-								<SortAscIcon size={16} /> Tri
+								<SortAscIcon size={16} /> Sort
 							</Label>
 							<Select value={sort} onValueChange={(newSort) => updateSearchParam("sort", newSort)}>
-								<SelectTrigger aria-label="Trier" className="h-10">
+								<SelectTrigger aria-label="Sort" className="h-10 w-full">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="number-asc">
 										<div className="flex items-center gap-2">
 											<ArrowDown01Icon className="size-4" />
-											<span>Vehicle # ↑</span>
+									<span>Vehicle ascending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="number-desc">
 										<div className="flex items-center gap-2">
 											<ArrowDown10Icon className="size-4" />
-											<span>Vehicle # ↓</span>
+									<span>Vehicle descending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="line-asc">
 										<div className="flex items-center gap-2">
 											<ArrowDownAZIcon className="size-4" />
-											<span>Line # ↑</span>
+									<span>Line ascending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="line-desc">
 										<div className="flex items-center gap-2">
 											<ArrowDownZAIcon className="size-4" />
-											<span>Line # ↓</span>
+									<span>Line descending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="activity">
 										<div className="flex items-center gap-2">
 											<ClockIcon className="size-4" />
-											<span>Activité</span>
+											<span>Activity</span>
 										</div>
 									</SelectItem>
 								</SelectContent>
