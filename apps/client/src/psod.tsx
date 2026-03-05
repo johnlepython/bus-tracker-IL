@@ -35,40 +35,40 @@ export function PurpleScreenOfDeath() {
 				<div className="max-w-3xl mx-auto">
 					<div className="flex items-center gap-2">
 						<FrownIcon className="size-12" />
-						<h1 className="font-bold text-3xl">Une erreur est survenue</h1>
+						<h1 className="font-bold text-3xl">An error occurred</h1>
 					</div>
 					<div className="flex flex-col items-start gap-2 mt-3">
 						<p>
-							Les informations relatives à l'erreur ont été remontées pour analyse.
-							<br />
-							En attendant, vous pouvez essayer de recharger l'application.
+						Error information has been reported for analysis.
+						<br />
+						In the meantime, you can try to reload the application.
 						</p>
 						<Button asChild className="hover:cursor-default" variant="on-branding-default">
-							<a href={embeddedNetworkId ? `/embed/${embeddedNetworkId}` : "/"}>Recharger l'application</a>
+							<a href={embeddedNetworkId ? `/embed/${embeddedNetworkId}` : "/"}>Reload application</a>
 						</Button>
 					</div>
 					<div className="flex flex-col items-start gap-2 mt-8">
-						<p>Si le problème persiste, vous pouvez également essayer de réinitialiser les données de l'application.</p>
-						<Button onClick={resetApp} variant="on-branding-default">
-							Réinitialiser l'app
+					<p>If the problem persists, you can also try to reset the application data.</p>
+					<Button onClick={resetApp} variant="on-branding-default">
+						Reset app
 						</Button>
 					</div>
 					<div className="flex flex-col items-start gap-2 mt-8">
 						<p>
-							Enfin, vous pouvez nous contacter à l'adresse{" "}
+							Finally, you can contact us at{" "}
 							<Link
 								className="text-branding-foreground/70 hover:text-branding-foreground/50"
 								to="mailto:contact@bus-tracker.fr"
 							>
 								contact@bus-tracker.fr
 							</Link>{" "}
-							avec le rapport d'erreur ci-dessous.
+							with the error report below.
 						</p>
 						<div className="border border-neutral-600 rounded-lg bg-neutral-800 p-3 w-full wrap-break-word">
 							<div className="flex justify-between">
-								<span>Rapport d'erreur</span>
-								<Button onClick={() => navigator.clipboard.writeText(String(error))} size="sm" variant="ghost">
-									<Copy className="size-4" /> Copier
+							<span>Error report</span>
+							<Button onClick={() => navigator.clipboard.writeText(String(error))} size="sm" variant="ghost">
+								<Copy className="size-4" /> Copy
 								</Button>
 							</div>
 							<div className="font-mono text-neutral-300 mt-0.5">{String(error)}</div>

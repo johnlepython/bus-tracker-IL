@@ -11,7 +11,7 @@ export function PreviewVehicleNumberSetting() {
 	return (
 		<div className="flex items-center space-x-2">
 			<Switch id={id} checked={previewVehicleNumber} onCheckedChange={setPreviewVehicleNumber} />
-			<Label htmlFor={id}>Prévisualiser le numéro du véhicule (si disponible)</Label>
+			<Label htmlFor={id}>Preview vehicle number (if available)</Label>
 		</div>
 	);
 }

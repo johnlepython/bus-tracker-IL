@@ -18,12 +18,12 @@ const schema = z.object({
 });
 
 const vehicleArchiveReasonLabels: Record<VehicleArchiveReason, string> = {
-	FAILURE: "Casse matérielle",
-	FIRE: "Incendie",
-	RETIRED: "Réforme",
-	SOLD: "Vente",
-	TRANSFER: "Transfert",
-	OTHER: "Autre",
+	FAILURE: "Mechanical failure",
+	FIRE: "Fire",
+	RETIRED: "Retired",
+	SOLD: "Sold",
+	TRANSFER: "Transfer",
+	OTHER: "Other",
 };
 
 type VehicleCharacteristicsArchiveProps = {
@@ -52,13 +52,13 @@ export function VehicleCharacteristicsArchive({ open, onOpenChange, vehicle }: V
 		try {
 			await archiveVehicle({ json, token: editorToken });
 
-			enqueueSnackbar({ message: "Ce véhicule a été archivé avec succès.", variant: "success" });
+			enqueueSnackbar({ message: "This vehicle has been archived successfully.", variant: "success" });
 
 			queryClient.invalidateQueries({ queryKey: ["network-vehicles", vehicle.networkId] });
 			queryClient.invalidateQueries({ queryKey: ["vehicles", vehicle.id] });
 			onOpenChange(false);
 		} catch {
-			enqueueSnackbar({ message: "Une erreur est survenue lors de l'archivage du véhicule.", variant: "error" });
+			enqueueSnackbar({ message: "An error occurred while archiving the vehicle.", variant: "error" });
 		}
 	};
 
@@ -66,19 +66,19 @@ export function VehicleCharacteristicsArchive({ open, onOpenChange, vehicle }: V
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent aria-describedby={undefined}>
 				<DialogHeader>
-					<DialogTitle>Archiver ce véhicule</DialogTitle>
+					<DialogTitle>Archive this vehicle</DialogTitle>
 				</DialogHeader>
 				<div className="text-muted-foreground text-sm">
-					Un véhicule peut être archivé pour les raisons suivantes :
+					A vehicle can be archived for the following reasons:
 					<ul className="list-inside list-disc">
 						<li>
-							il est réformé <span className="italic">(TC-Infos fait foi)</span> ;
+							it is retired <span className="italic">(TC-Infos is authoritative)</span>;
 						</li>
-						<li>il ne correspond pas à un réel véhicule du réseau.</li>
+						<li>it does not correspond to a real vehicle in the network.</li>
 					</ul>
 					<br />
-					Cocher la case ci-dessous <span className="font-bold">uniquement</span> en cas de réforme définitive du
-					véhicule.
+					Check the box below <span className="font-bold">only</span> in case of permanent retirement of
+					the vehicle.
 				</div>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)}>
@@ -87,7 +87,7 @@ export function VehicleCharacteristicsArchive({ open, onOpenChange, vehicle }: V
 							name="wipeReference"
 							label={
 								<>
-									Casser l'association <span className="font-mono">{vehicle.ref}</span> du véhicule
+									Break the <span className="font-mono">{vehicle.ref}</span> association of the vehicle
 								</>
 							}
 							itemProps={{ className: "mb-5" }}

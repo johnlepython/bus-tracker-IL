@@ -33,18 +33,18 @@ export function VehicleDetails() {
 		.with("FERRY", () => <ShipIcon className="align-top inline size-4" />)
 		.otherwise(() => <BusIcon className="align-top inline size-4" />);
 
-	const vehicleDesignation = vehicle.designation ?? "Véhicule";
+	const vehicleDesignation = vehicle.designation ?? "Vehicle";
 
 	return (
 		<>
-			<title>{`${vehicleDesignation} n°${vehicle.number} – ${network.name} – Données – Bus Tracker`}</title>
+			<title>{`${vehicleDesignation} #${vehicle.number} – ${network.name} – Data – Bus Tracker`}</title>
 			<main className="max-w-(--breakpoint-xl) p-3 w-full mx-auto">
 				<NetworkHeader network={network} />
 				<Breadcrumb className="mt-3">
 					<BreadcrumbList>
 						<BreadcrumbItem>
 							<BreadcrumbLink asChild>
-								<Link to="/data">Données</Link>
+							<Link to="/data">Data</Link>
 							</BreadcrumbLink>
 						</BreadcrumbItem>
 						<BreadcrumbSeparator />
@@ -56,7 +56,7 @@ export function VehicleDetails() {
 						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<BreadcrumbPage>
-								{vehicleIcon} Véhicule n°{vehicle.number}
+							{vehicleIcon} Vehicle #{vehicle.number}
 							</BreadcrumbPage>
 						</BreadcrumbItem>
 					</BreadcrumbList>

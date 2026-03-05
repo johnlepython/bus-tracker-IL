@@ -11,7 +11,7 @@ export function ShowDebugInfoSetting() {
 	return (
 		<div className="flex items-center space-x-2">
 			<Switch id={id} checked={showDebugInfo} onCheckedChange={setShowDebugInfo} />
-			<Label htmlFor={id}>Voir les informations de débogage</Label>
+			<Label htmlFor={id}>Show debug information</Label>
 		</div>
 	);
 }

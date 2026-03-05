@@ -35,7 +35,7 @@ export function Announcements() {
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button className="relative" size="icon" variant="on-branding-outline">
-					<LucideMegaphone aria-label="Actualités" />
+					<LucideMegaphone aria-label="News" />
 					{unreadAnnouncementsCount > 0 && (
 						<span className="absolute animate-pulse bg-green-600 -top-2 -left-2 size-4 rounded-full text-white text-xs z-10">
 							{unreadAnnouncementsCount}
@@ -45,7 +45,7 @@ export function Announcements() {
 			</DialogTrigger>
 			<DialogContent aria-describedby={undefined} className="max-h-[calc(100svh-4rem)] overflow-y-auto">
 				<DialogHeader>
-					<DialogTitle>Actualités</DialogTitle>
+					<DialogTitle>News</DialogTitle>
 				</DialogHeader>
 				<Accordion onValueChange={trackAnnouncementRead} type="single" collapsible>
 					{announcements.map((announcement) => (

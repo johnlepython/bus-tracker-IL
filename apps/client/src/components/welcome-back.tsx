@@ -11,20 +11,20 @@ export function WelcomeBack() {
 		<Dialog open={wasRedirected} onOpenChange={() => setSearchParams({})}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Bienvenue sur la nouvelle version</DialogTitle>
+					<DialogTitle>Welcome to the new version</DialogTitle>
 					<DialogDescription>
-						Cette adresse (<a href="https://bus-tracker.fr">bus-tracker.fr</a>) remplace désormais l'instance locale que
-						vous aviez l'habitude d'utiliser.
+						This address (<a href="https://bus-tracker.fr">bus-tracker.fr</a>) now replaces the local instance you were
+						used to using.
 						<br />
 						<br />
-						L'ensemble des fonctionnalités ont été reprises sur cette nouvelle version.
+						All features have been carried over to this new version.
 						<br />
-						Pensez néanmoins à prendre quelques minutes de votre temps afin de prendre vos repères 😉<br />
+						However, please take a few minutes of your time to get your bearings 😉<br />
 						<br />
-						Concernant les données, celles-ci ont été synchronisées afin qu'aucune information ne soit perdue.
+						Regarding the data, it has been synchronized so that no information is lost.
 						<br />
 						<br />
-						Pour toute interrogation autre, contactez-moi par e-mail
+						For any other questions, contact me by email
 					</DialogDescription>
 				</DialogHeader>
 			</DialogContent>

@@ -39,7 +39,7 @@ export function VehiclesMarkersStatusControl({ loading, onClick }: VehiclesMarke
 				className="text-black"
 				disabled={typeof onClick === "undefined"}
 				onClick={onClick}
-				title={loading ? "Rafraichissement en cours..." : "Rafraichir les données"}
+				title={loading ? "Refreshing..." : "Refresh data"}
 				type="button"
 			>
 				<RefreshCwIcon className={cn("m-auto p-0.5", loading && "animate-spin")} strokeWidth={3} />
