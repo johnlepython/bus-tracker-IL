@@ -10,13 +10,18 @@ import { vehiclesTable } from "../core/database/schema.js";
 export async function updateVehicleOperators(updates: [number, number][]) {
 	if (updates.length === 0) return;
 
-	// Use SQL CASE statement for efficient batch update with explicit integer casting
-	const cases = updates.map(([vehicleId, operatorId]) => sql`WHEN ${vehicleId} THEN ${sql.raw(String(operatorId))}`);
+	// Build a CASE statement with proper type casting
+	// Convert to raw SQL to avoid parameterization issues with integer type
+	const caseConditions = updates
+		.map(([vehicleId, operatorId]) => `WHEN ${vehicleId} THEN ${operatorId}`)
+		.join(' ');
+	
+	const query = sql`CASE id ${sql.raw(caseConditions)} END`;
 
 	await database
 		.update(vehiclesTable)
 		.set({
-			operatorId: sql`CASE id ${sql.join(cases, sql` `)} END`,
+			operatorId: query,
 		})
 		.where(
 			sql`id IN (${sql.join(
