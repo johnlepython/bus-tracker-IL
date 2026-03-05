@@ -20,6 +20,7 @@ import { isTrainNumber } from "~/utils/is-train";
 export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 	const isTrain = isTrainNumber(vehicle.number);
 	const line = useLine(vehicle.networkId, vehicle.activity?.status === "online" ? vehicle.activity.lineId : undefined);
+	const operatorName = vehicle.operator?.name;
 
 	const displayContent = useMemo(() => {
 		if (vehicle.archivedAt !== null) {
@@ -32,7 +33,7 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 				.otherwise(() => <ArchiveIcon className="size-full" />);
 		}
 
-		if (vehicle.operator) {
+		if (operatorName) {
 			return (
 				<div className="flex h-full flex-col items-center justify-center px-1 text-center">
 					{typeof line !== "undefined" && (
@@ -42,7 +43,7 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 							<p className="font-bold text-lg leading-none">{line.number}</p>
 						)
 					)}
-					<p className="font-bold text-sm leading-tight">{vehicle.operator.name}</p>
+					<p className="font-bold text-sm leading-tight">{operatorName}</p>
 				</div>
 			);
 		}
@@ -62,10 +63,10 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 				) : (
 					<p className="font-bold text-lg leading-none">—</p>
 				)}
-				<p className="font-bold text-sm leading-tight">{vehicle.operator?.name ?? "—"}</p>
+				<p className="font-bold text-sm leading-tight">{operatorName ?? "—"}</p>
 			</div>
 		);
-	}, [line, vehicle]);
+	}, [line, operatorName, vehicle]);
 
 	return (
 		<Link
