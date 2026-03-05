@@ -31,10 +31,14 @@ console.log("► Connecting to Redis.");
 const redis = createClient({
 	url: process.env.REDIS_URL ?? "redis://localhost:6379",
 });
-redis.on("error", (err) => {
-	console.error("► Redis client error:", err);
+await redis.connect();
+
+// Create a separate subscriber client for pub/sub
+const subscriber = redis.duplicate();
+subscriber.on("error", (err) => {
+	console.error("► Redis subscriber error:", err);
 });
-redis.on("message", (message, channel) => {
+subscriber.on("message", (message, channel) => {
 	console.log("► Redis message received on channel '%s' (length: %d)", channel, String(message).length);
 	
 	// Handle async operations without blocking
@@ -66,8 +70,8 @@ redis.on("message", (message, channel) => {
 		}
 	})();
 });
-await redis.connect();
-await redis.subscribe("journeys");
+await subscriber.connect();
+await subscriber.subscribe("journeys");
 
 console.log("► Listening on port %d.\n", port);
 serve({ fetch: hono.fetch, port });
