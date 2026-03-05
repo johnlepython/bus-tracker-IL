@@ -7,7 +7,7 @@ import { createClient } from "redis";
 import { migrateDatabase } from "./core/database/migrate.js";
 import { handleVehicleBatch } from "./vehicle-handling/handle-vehicle-batch.js";
 
-import { port } from "./options.js";
+import { port, redisUrl } from "./options.js";
 import { hono } from "./server.js";
 
 import "./controllers/announcements.js";
@@ -27,14 +27,16 @@ console.log(`,-----.                  ,--------.                   ,--.         
 console.log("► Running database migrations.");
 await migrateDatabase();
 
-console.log("► Connecting to Redis.");
+console.log("► Connecting to Redis at: %s", redisUrl);
 const redis = createClient({
-	url: process.env.REDIS_URL ?? "redis://localhost:6379",
+	url: redisUrl,
 });
 await redis.connect();
 
-// Create a separate subscriber client for pub/sub
-const subscriber = redis.duplicate();
+// Create a separate subscriber connection for pub/sub (required by redis v5)
+const subscriber = createClient({
+	url: redisUrl,
+});
 subscriber.on("error", (err) => {
 	console.error("► Redis subscriber error:", err);
 });
