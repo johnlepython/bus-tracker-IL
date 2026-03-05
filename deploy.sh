@@ -44,7 +44,7 @@ fi
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}Step 1/5: Vérification locale${NC}"
+echo -e "${GREEN}Step 1/6: Vérification locale${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 # Vérifier qu'on est dans un repo git
@@ -69,7 +69,7 @@ echo -e "${GREEN}✅ Repository local OK${NC}"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}Step 2/5: Push vers GitHub${NC}"
+echo -e "${GREEN}Step 2/6: Push vers GitHub${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 git push origin "$BRANCH"
@@ -77,7 +77,7 @@ echo -e "${GREEN}✅ Code pushé sur GitHub${NC}"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}Step 3/5: Connexion au VPS${NC}"
+echo -e "${GREEN}Step 3/6: Connexion au VPS${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 # Test de connexion SSH
@@ -92,7 +92,17 @@ echo -e "${GREEN}✅ Connexion SSH établie${NC}"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}Step 4/5: Pull sur le VPS${NC}"
+echo -e "${GREEN}Step 4/6: Arrêt des services${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+echo -e "${YELLOW}🛑 Arrêt des services pour libérer les ressources...${NC}"
+ssh "$VPS_HOST" "sudo systemctl stop bus-tracker-backend bus-tracker-stride-provider"
+
+echo -e "${GREEN}✅ Services arrêtés${NC}"
+echo ""
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}Step 5/6: Pull et installation${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 ssh "$VPS_HOST" "cd $VPS_PATH && \
@@ -105,11 +115,11 @@ ssh "$VPS_HOST" "cd $VPS_PATH && \
     echo '📦 Installing dependencies...' && \
     pnpm install"
 
-echo -e "${GREEN}✅ Code à jour sur le VPS${NC}"
+echo -e "${GREEN}✅ Code à jour et dépendances installées${NC}"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}Step 5/5: Rebuild & Restart${NC}"
+echo -e "${GREEN}Step 6/6: Rebuild & Redémarrage${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 if [ "$FULL_DEPLOY" = true ]; then
@@ -122,10 +132,10 @@ if [ "$FULL_DEPLOY" = true ]; then
     ssh "$VPS_HOST" "sudo systemctl reload nginx"
 fi
 
-echo -e "${YELLOW}🔄 Restart backend services...${NC}"
-ssh "$VPS_HOST" "sudo systemctl restart bus-tracker-backend bus-tracker-stride-provider"
+echo -e "${YELLOW}� Démarrage des services...${NC}"
+ssh "$VPS_HOST" "sudo systemctl start bus-tracker-backend bus-tracker-stride-provider"
 
-echo -e "${GREEN}✅ Services redémarrés${NC}"
+echo -e "${GREEN}✅ Services démarrés${NC}"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
