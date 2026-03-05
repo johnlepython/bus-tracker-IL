@@ -1,0 +1,16 @@
+# Configuration SSH pour déploiement vers le VPS
+# À copier dans ~/.ssh/config sur ton Mac
+
+Host bus-tracker-vps
+    HostName 51.38.36.199
+    User debian
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    
+# Utilisation :
+# ssh bus-tracker-vps
+# Au lieu de : ssh debian@51.38.36.199
+
+# Pour le script deploy.sh, tu peux aussi définir :
+# export VPS_HOST=bus-tracker-vps
