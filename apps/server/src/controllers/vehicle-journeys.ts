@@ -4,6 +4,7 @@ import * as z from "zod";
 
 import { createParamValidator, createQueryValidator } from "../api/validator-helpers.js";
 import { fetchLines } from "../core/cache/line-cache.js";
+import { fetchOperators } from "../core/cache/operator-cache.js";
 import { database } from "../core/database/database.js";
 import { vehiclesTable } from "../core/database/schema.js";
 import { journeyStore } from "../core/store/journey-store.js";
@@ -65,13 +66,18 @@ hono.get("/vehicle-journeys/markers", createQueryValidator(getVehicleJourneyMark
 	const lineIds = boundedJourneys.flatMap(({ lineId }) => lineId ?? []);
 	const lines = await fetchLines(Array.from(new Set(lineIds)));
 
-	const items = boundedJourneys.map(({ id, lineId, position, vehicle }) => {
+	const operatorIds = boundedJourneys.flatMap(({ operatorId }) => operatorId ?? []);
+	const operators = await fetchOperators(Array.from(new Set(operatorIds)));
+
+	const items = boundedJourneys.map(({ id, lineId, position, vehicle, operatorId }) => {
 		const { latitude, longitude, bearing, type } = position;
 		const line = lineId ? lines.get(lineId) : undefined;
+		const operator = operatorId ? operators.get(operatorId) : undefined;
 		return {
 			id,
 			lineNumber: line?.number,
 			vehicleNumber: vehicle?.number,
+			operatorName: operator?.name,
 			color: line?.textColor ? `#${line.textColor}` : undefined,
 			fillColor: line?.color ? `#${line.color}` : undefined,
 			position: { latitude, longitude, bearing, type },
@@ -106,6 +112,9 @@ hono.get("/vehicle-journeys/:id", createParamValidator(getVehicleJourneyParams),
 			).at(0)
 		: undefined;
 
+	const operators = journey.operatorId ? await fetchOperators([journey.operatorId]) : new Map();
+	const operator = journey.operatorId ? operators.get(journey.operatorId) : undefined;
+
 	const girouette = await findGirouette({
 		networkId: journey.networkId,
 		lineId: journey.lineId,
@@ -116,6 +125,7 @@ hono.get("/vehicle-journeys/:id", createParamValidator(getVehicleJourneyParams),
 	return c.json({
 		...journey,
 		vehicle: journey.vehicle ? { ...journey.vehicle, designation: vehicle?.designation ?? undefined } : undefined,
+		operatorName: operator?.name,
 		girouette: girouette?.data,
 	});
 });

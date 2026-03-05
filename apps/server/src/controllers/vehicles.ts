@@ -92,13 +92,16 @@ hono.get("/vehicles", createQueryValidator(searchVehiclesSchema), async (c) => {
 			.otherwise(() => undefined),
 	);
 
-	const vehicleList = await database
+	const vehicleListRaw = await database
 		.select()
 		.from(vehiclesTable)
+		.leftJoin(operatorsTable, eq(operatorsTable.id, vehiclesTable.operatorId))
 		.where(vehiclesListWhereClause)
 		.orderBy(sortOrder === "asc" ? asc(vehiclesTable[sortBy]) : desc(vehiclesTable[sortBy]), vehiclesTable.operatorId)
 		.offset(page * limit)
 		.limit(limit);
+
+	const vehicleList = vehicleListRaw.map((row) => ({ ...row.vehicle, operator: row.operator }));
 
 	const recentActivities = await database
 		.select({
@@ -120,7 +123,7 @@ hono.get("/vehicles", createQueryValidator(searchVehiclesSchema), async (c) => {
 
 	const lastActivityByVehicleId = keyBy(recentActivities, (currentActivity) => currentActivity.vehicleId, "ignore");
 
-	const vehicleWithActivityList = vehicleList.map(({ lastSeenAt, ...vehicle }) => {
+	const vehicleWithActivityList = vehicleList.map(({ lastSeenAt, operator, ...vehicle }) => {
 		// Ce n'est pas possible, dans un monde normal et pour un même véhicule,
 		// de tourner sur plusieurs lignes en même temps. Si jamais c'est le cas,
 		// et bien on prendra le dernier début puis le reste ira se faire voir 👍
@@ -128,6 +131,7 @@ hono.get("/vehicles", createQueryValidator(searchVehiclesSchema), async (c) => {
 
 		return {
 			...vehicle,
+			operator,
 			activity: {
 				status: currentActivity ? "online" : "offline",
 				since: currentActivity ? currentActivity.since : lastSeenAt,
