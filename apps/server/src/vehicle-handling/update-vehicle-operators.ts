@@ -20,7 +20,7 @@ export async function updateVehicleOperators(updates: [number, number][]) {
 	// Execute raw SQL to preserve integer types throughout
 	await database.execute(
 		sql.raw(`
-			UPDATE vehicles 
+			UPDATE vehicle 
 			SET operator_id = CASE id ${caseConditions} END 
 			WHERE id IN (${vehicleIds})
 		`)
