@@ -32,6 +32,32 @@ Now, to run the project:
 5. Start one or more providers (e.g.: `pnpm dev:gtfs configurations/rouen-astuce.mjs`)
 6. Head to [http://localhost:3000](http://localhost:3000)
 
+## Development Workflow
+
+For local development on macOS and deployment to VPS:
+
+- **🍎 [LOCAL_SETUP.md](LOCAL_SETUP.md)** - Complete setup guide for macOS development environment
+- **🔄 [DEV_WORKFLOW.md](DEV_WORKFLOW.md)** - Git workflow, branching strategy, and deployment process
+- **🚀 `./deploy.sh`** - Automated deployment script from local to VPS
+
+### Quick Start (Local Development)
+
+```bash
+# Clone and setup on Mac
+git clone https://github.com/johnlepython/bus-tracker-IL.git
+cd bus-tracker-IL
+pnpm install
+docker compose up -d
+
+# Create feature branch
+git checkout -b feature/my-feature
+
+# Develop locally, then deploy to VPS
+./deploy.sh feature/my-feature
+```
+
+See **[DEV_WORKFLOW.md](DEV_WORKFLOW.md)** for the complete development and deployment workflow.
+
 ## Tech architecture
 
 Since the late 2024 rewrite, the app now uses Redis as a pub-sub mechanism for *providers* to send their data to the core server, whose responsibility is to aggregate and publish data to the end users.
@@ -44,6 +70,54 @@ These components are involved in Bus Tracker in some way:
 - [GTFS-RT Generator – LiA (Le Havre)](https://github.com/kevinbioj/gtfsrt-lia)
 - [GTFS-RT Generator – Astuce / TCAR (Rouen)](https://github.com/kevinbioj/gtfsrt-tcar)
 - [GTFS-RT Generator – Île-de-France Mobilités (rail & subway only)](https://github.com/kevinbioj/gtfsrt-idfm)
+
+## Operations & Deployment
+
+For server deployment and operations documentation:
+
+- **📋 [DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide with configuration, troubleshooting, and architecture details
+- **⚡ [QUICK-REF.md](QUICK-REF.md)** - Quick reference for common commands and fixes
+- **� [SYSTEMD_SERVICES.md](SYSTEMD_SERVICES.md)** - **systemd services documentation (production)**
+- **⚡ [SERVICES_QUICKSTART.md](SERVICES_QUICKSTART.md)** - Quick reference for systemd services
+- **🔍 `./check-status.sh`** - Run diagnostic checks on all services
+- **🚀 `./restart-all.sh`** - Automated restart script for all services
+
+### Production Deployment (systemd)
+
+The production server uses **systemd services** for automatic startup and crash recovery:
+
+```bash
+# Service status
+sudo systemctl status bus-tracker-backend bus-tracker-stride-provider
+
+# Restart services
+sudo systemctl restart bus-tracker-backend bus-tracker-stride-provider
+
+# View logs
+tail -f /var/log/bus-tracker-backend.log
+tail -f /var/log/bus-tracker-stride.log
+
+# Deploy updates
+git pull && pnpm install
+sudo systemctl restart bus-tracker-backend bus-tracker-stride-provider
+
+# Rebuild frontend
+./build-frontend.sh && sudo systemctl reload nginx
+```
+
+See **[SYSTEMD_SERVICES.md](SYSTEMD_SERVICES.md)** for complete documentation.
+
+### Development Setup
+
+```bash
+# Check system status
+./check-status.sh
+
+# Restart all services (manual)
+./restart-all.sh
+```
+
+**Important**: Backend must run on port **8080** for nginx to work correctly.
 
 ## License
 

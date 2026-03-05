@@ -99,7 +99,7 @@ export function OnlineVehiclesVehicleCard({
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent side="left">
-							<p>Voir sur la carte</p>
+						<p>View on map</p>
 						</TooltipContent>
 					</Tooltip>
 				</TooltipProvider>

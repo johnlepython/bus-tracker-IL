@@ -79,7 +79,7 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 					{vehicle.designation && <p className="font-bold">{vehicle.designation}</p>}
 					{vehicle.activity?.status === "online" ? (
 						<p>
-							En circulation depuis{" "}
+							Online since{" "}
 							<span className="font-bold tabular-nums">{dayjs(vehicle.activity.since).format("HH:mm")}</span>
 						</p>
 					) : (
