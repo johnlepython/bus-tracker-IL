@@ -73,7 +73,9 @@ subscriber.on("message", (message, channel) => {
 	})();
 });
 await subscriber.connect();
-await subscriber.subscribe("journeys");
+await subscriber.subscribe("journeys", () => {
+	// Message handling is done via the 'message' event listener above
+});
 
 console.log("► Listening on port %d.\n", port);
 serve({ fetch: hono.fetch, port });
