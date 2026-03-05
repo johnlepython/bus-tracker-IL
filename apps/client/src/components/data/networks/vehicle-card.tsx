@@ -21,7 +21,7 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 	const isTrain = isTrainNumber(vehicle.number);
 	const line = useLine(vehicle.networkId, vehicle.activity?.status === "online" ? vehicle.activity.lineId : undefined);
 
-	const activeLine = useMemo(() => {
+	const displayContent = useMemo(() => {
 		if (vehicle.archivedAt !== null) {
 			return match(vehicle.archivedFor)
 				.with("FAILURE", () => <EngineIcon className="size-full" />)
@@ -32,6 +32,16 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 				.otherwise(() => <ArchiveIcon className="size-full" />);
 		}
 
+		// Display the operator/carrier name instead of line number
+		if (vehicle.operator) {
+			return <p className="flex items-center justify-center h-full font-bold text-lg text-center px-1">{vehicle.operator.name}</p>;
+		}
+
+		if (vehicle.activity?.status !== "online") {
+			return <Zzz className="h-full mx-auto" />;
+		}
+
+		// Fallback: show line if no operator
 		if (typeof line === "undefined") return <Zzz className="h-full mx-auto" />;
 
 		return line.cartridgeHref ? (
@@ -84,7 +94,7 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 					{isTrain ? (
 						<p className="flex items-center justify-center h-full font-bold text-2xl">{vehicle.number}</p>
 					) : (
-						activeLine
+						displayContent
 					)}
 				</div>
 				<div className="flex flex-col justify-center">

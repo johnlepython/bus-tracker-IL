@@ -156,9 +156,22 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 					return lineComparison !== 0 ? lineComparison : numberSort(a, b);
 				}
 
+				if (sort === "carrier-asc" || sort === "carrier-desc") {
+					const carrierNameA = a.operator?.name ?? "";
+					const carrierNameB = b.operator?.name ?? "";
+
+					let carrierComparison = carrierNameA.localeCompare(carrierNameB);
+					if (sort === "carrier-desc") {
+						carrierComparison = -carrierComparison;
+					}
+
+					// If carrier names are equal, sort by vehicle number
+					return carrierComparison !== 0 ? carrierComparison : numberSort(a, b);
+				}
+
 				return numberSort(a, b);
 			});
-	}, [debouncedFilter, operatorId, showArchived, searchParams, type, vehicles, network]);
+	}, [debouncedFilter, operatorId, showArchived, searchParams, type, sort, vehicles, network]);
 
 	const onlineVehicles = useMemo(
 		() => filteredAndSortedVehicles.filter(({ activity }) => typeof activity.lineId !== "undefined"),
@@ -267,6 +280,18 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 										<div className="flex items-center gap-2">
 											<ArrowDownZAIcon className="size-4" />
 									<span>Line descending</span>
+										</div>
+									</SelectItem>
+									<SelectItem value="carrier-asc">
+										<div className="flex items-center gap-2">
+											<ArrowDownAZIcon className="size-4" />
+											<span>Carrier ascending</span>
+										</div>
+									</SelectItem>
+									<SelectItem value="carrier-desc">
+										<div className="flex items-center gap-2">
+											<ArrowDownZAIcon className="size-4" />
+											<span>Carrier descending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="activity">

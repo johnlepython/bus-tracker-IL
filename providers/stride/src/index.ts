@@ -336,7 +336,9 @@ async function run() {
         recordedAt,
       };
 
-      const id = `${NETWORK_REF}:${OPERATOR_REF ?? ""}:VehicleTracking:${vehicleRefRaw}`;
+      // Use operator_ref from the route (each line has an operator)
+      const operatorRef = loc.siri_route__operator_ref ? String(loc.siri_route__operator_ref) : (OPERATOR_REF ?? "");
+      const id = `${NETWORK_REF}:${operatorRef}:VehicleTracking:${vehicleRefRaw}`;
       
       // Get route data from cache for commercial number and destination
       const lineRef = loc.siri_route__line_ref;
@@ -358,8 +360,8 @@ async function run() {
         id,
         position,
         networkRef: NETWORK_REF,
-        operatorRef: OPERATOR_REF,
-        vehicleRef: vehicleIdToRef(vehicleRefRaw),
+        operatorRef: operatorRef,
+        vehicleRef: `${NETWORK_REF}:${operatorRef}:Vehicle:${vehicleRefRaw}`,
         line: loc.siri_route__line_ref
           ? {
               ref: `${NETWORK_REF}:Line:${loc.siri_route__line_ref}`,
