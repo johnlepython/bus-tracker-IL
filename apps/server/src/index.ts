@@ -34,8 +34,13 @@ const redis = createClient({
 await redis.connect();
 
 // Create a separate subscriber connection for pub/sub (required by redis v5)
+// Disable RESP3 to prevent protocol decoding issues with string messages
 const subscriber = createClient({
 	url: redisUrl,
+	socket: {
+		reconnectStrategy: (retries) => Math.min(retries * 50, 500),
+	},
+	RESP: 2, // Force RESP2 protocol to avoid decoder issues
 });
 subscriber.on("error", (err) => {
 	console.error("► Redis subscriber error:", err);
