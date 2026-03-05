@@ -40,40 +40,36 @@ const subscriber = createClient({
 subscriber.on("error", (err) => {
 	console.error("► Redis subscriber error:", err);
 });
-subscriber.on("message", (channel, message) => {
-	console.log("► Received message on channel: %s", channel);
-	
-	// Handle async operations without blocking
-	(async () => {
-		let didWarn = false;
-		let vehicleJourneys: VehicleJourney[];
-
-		try {
-			const payload = JSON.parse(message);
-			if (!Array.isArray(payload)) throw new Error("Payload is not an array");
-			console.log(`► Received journey batch: ${payload.length} journeys`);
-			vehicleJourneys = payload.flatMap((entry) => {
-				const parsed = vehicleJourneySchema.safeParse(entry);
-				if (!parsed.success) {
-					if (!didWarn) {
-						console.warn(`Rejected object(s) from journeys channel, sample:`, entry);
-						console.error(parsed.error);
-						didWarn = true;
-					}
-					return [];
-				}
-				return parsed.data;
-			});
-			console.log(`► Validated ${vehicleJourneys.length} journeys`);
-
-			await handleVehicleBatch(vehicleJourneys);
-		} catch (error) {
-			console.error("► Error processing journey batch:", error);
-		}
-	})();
-});
 await subscriber.connect();
-await subscriber.subscribe("journeys");
+await subscriber.subscribe("journeys", async (message, channel) => {
+	console.log("► Received message on channel: %s", channel);
+
+	let didWarn = false;
+	let vehicleJourneys: VehicleJourney[];
+
+	try {
+		const payload = JSON.parse(message);
+		if (!Array.isArray(payload)) throw new Error("Payload is not an array");
+		console.log(`► Received journey batch: ${payload.length} journeys`);
+		vehicleJourneys = payload.flatMap((entry) => {
+			const parsed = vehicleJourneySchema.safeParse(entry);
+			if (!parsed.success) {
+				if (!didWarn) {
+					console.warn(`Rejected object(s) from journeys channel, sample:`, entry);
+					console.error(parsed.error);
+					didWarn = true;
+				}
+				return [];
+			}
+			return parsed.data;
+		});
+		console.log(`► Validated ${vehicleJourneys.length} journeys`);
+
+		await handleVehicleBatch(vehicleJourneys);
+	} catch (error) {
+		console.error("► Error processing journey batch:", error);
+	}
+});
 
 console.log("► Listening on port %d.\n", port);
 serve({ fetch: hono.fetch, port });
