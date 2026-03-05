@@ -28,11 +28,11 @@ export function NetworkList() {
 
 	return (
 		<>
-			<title>Données – Bus Tracker</title>
+			<title>Data – Bus Tracker</title>
 			<main className="p-3 max-w-(--breakpoint-xl) w-full mx-auto">
-				<h2 className="font-bold text-2xl">Données des véhicules</h2>
+				<h2 className="font-bold text-2xl">Vehicle Data</h2>
 				<p className="text-muted-foreground">
-					Seuls les réseaux pour lesquels le suivi des véhicules est disponible sont affichés.
+					Only networks with vehicle tracking available are displayed.
 				</p>
 				<Separator />
 				<Accordion
@@ -48,8 +48,8 @@ export function NetworkList() {
 								name: (
 									<>
 										<span>
-											<StarIcon className="inline align-text-bottom fill-yellow-400 stroke-yellow-600" /> Réseaux
-											favoris
+										<StarIcon className="inline align-text-bottom fill-yellow-400 stroke-yellow-600" /> Favorite
+										networks
 										</span>
 									</>
 								),
@@ -82,7 +82,7 @@ function NetworksAccordion({ region, networks }: NetworksAccordionProps) {
 	return (
 		<AccordionItem key={region?.id ?? -1} value={region?.id.toString() ?? "-1"}>
 			<AccordionTrigger className={cn("text-xl", region?.id === 0 && "hover:no-underline")}>
-				{region?.name ?? "Autres réseaux"}
+				{region?.name ?? "Other networks"}
 			</AccordionTrigger>
 			<AccordionContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pb-0 rounded-lg mb-5">
 				{networks.map((network) => (

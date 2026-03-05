@@ -38,7 +38,7 @@ export function VehicleNextStops({ calls }: Readonly<NextStopsProps>) {
 										() =>
 											({
 												className: "bg-yellow-700 dark:bg-yellow-500 font-bold text-white dark:text-black",
-												content: "Desserte supplémentaire",
+												content: "Additional stop",
 											}) as const,
 									)
 									.with(
@@ -46,7 +46,7 @@ export function VehicleNextStops({ calls }: Readonly<NextStopsProps>) {
 										([, delay]) =>
 											({
 												className: "bg-orange-600 dark:bg-orange-700 font-bold text-white",
-												content: `Retard de ${delay} minute${delay > 1 ? "s" : ""}`,
+												content: `Delay of ${delay} minute${delay > 1 ? "s" : ""}`,
 											}) as const,
 									)
 									.with(
@@ -54,14 +54,14 @@ export function VehicleNextStops({ calls }: Readonly<NextStopsProps>) {
 										([, delay]) =>
 											({
 												className: "bg-red-600 dark:bg-red-700 font-bold text-white",
-												content: `Avance de ${Math.abs(delay)} minute${delay < -1 ? "s" : ""}`,
+												content: `Early by ${Math.abs(delay)} minute${delay < -1 ? "s" : ""}`,
 											}) as const,
 									)
 									.otherwise(
 										() =>
 											({
 												className: "bg-green-600 dark:bg-green-700 font-bold text-white",
-												content: "À l'heure",
+												content: "On time",
 											}) as const,
 									)
 							: null;

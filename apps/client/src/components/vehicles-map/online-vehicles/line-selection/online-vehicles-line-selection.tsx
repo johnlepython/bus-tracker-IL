@@ -67,8 +67,8 @@ export function OnlineVehiclesLineSelection({
 				)}
 				{typeof line.onlineVehicleCount === "number" && line.onlineVehicleCount > 0 ? (
 					<p className="align-middle text-base text-wrap">
-						<span className="font-bold">{line.onlineVehicleCount}</span> véhicule
-						{line.onlineVehicleCount > 1 ? "s" : ""} en ligne
+					<span className="font-bold">{line.onlineVehicleCount}</span> vehicle
+					{line.onlineVehicleCount > 1 ? "s" : ""} online
 					</p>
 				) : null}
 			</div>
@@ -105,8 +105,8 @@ export function OnlineVehiclesLineSelection({
 							{linesWithVehicles.length > 0 && linesWithoutVehicles.length > 0 && <Separator />}
 							{linesWithoutVehicles.length > 0 && (
 								<div className="bg-muted text-muted-foreground text-xs text-center p-2 rounded-md">
-									<Info className="inline size-4 align-text-bottom mr-1" /> Aucun véhicule identifiable ne circule sur{" "}
-									{linesWithVehicles.length > 0 ? "ces lignes" : "ce réseau"}.
+								<Info className="inline size-4 align-text-bottom mr-1" /> No identifiable vehicle is running on{" "}
+								{linesWithVehicles.length > 0 ? "these lines" : "this network"}.
 								</div>
 							)}
 							{linesWithoutVehicles.flatMap(renderLine)}

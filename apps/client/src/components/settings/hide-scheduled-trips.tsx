@@ -18,7 +18,7 @@ export function HideScheduledTripsSetting() {
 	return (
 		<div className="flex items-center space-x-2">
 			<Switch id={id} checked={hideScheduledTrips} onCheckedChange={onChange} />
-			<Label htmlFor={id}>Masquer les courses théoriques</Label>
+			<Label htmlFor={id}>Hide theoretical trips</Label>
 		</div>
 	);
 }

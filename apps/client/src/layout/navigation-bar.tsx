@@ -8,12 +8,12 @@ import { Button } from "~/components/ui/button";
 const links = [
 	{
 		href: "/",
-		label: "Carte",
+		label: "Map",
 		isActive: (pathname: string) => pathname === "/",
 	},
 	{
 		href: "/data",
-		label: "Données",
+		label: "Data",
 		isActive: (pathname: string) => pathname.startsWith("/data"),
 	},
 ] as const;

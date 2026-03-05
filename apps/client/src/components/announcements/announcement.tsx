@@ -32,7 +32,7 @@ export function AnnouncementContent({ announcement }: Readonly<AnnouncementProps
 			{(announcement.publishedAt !== null || announcement.updatedAt !== announcement.createdAt) && (
 				<p className="flex justify-end mt-3 text-muted-foreground text-sm">
 					{announcement.updatedAt !== announcement.createdAt && (
-						<>Mise à jour le {dayjs(announcement.updatedAt).format("DD/MM/YYYY [à] HH:mm")}</>
+					<>Updated on {dayjs(announcement.updatedAt).format("MM/DD/YYYY [at] HH:mm")}</>
 					)}
 					{announcement.publishedAt !== null && announcement.updatedAt !== announcement.createdAt && " • "}
 					{announcement.publishedAt !== null && dayjs(announcement.publishedAt).format("DD/MM/YYYY [à] HH:mm")}

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { ArchiveIcon, BinaryIcon, ClockIcon, FilterIcon, SortAscIcon } from "lucide-react";
+import { ArchiveIcon, ArrowDown01Icon, ArrowDown10Icon, ArrowDownAZIcon, ArrowDownZAIcon, ClockIcon, FilterIcon, SortAscIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useDebounceValue } from "usehooks-ts";
@@ -70,7 +70,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 	const type = searchParams.get("type") ?? "ALL";
 	const operatorId = searchParams.get("operatorId") ?? "ALL";
 	const filter = searchParams.get("filter") ?? "";
-	const sort = searchParams.get("sort") ?? "number";
+	const sort = searchParams.get("sort") ?? "number-asc";
 
 	const [debouncedFilter] = useDebounceValue(() => filter, 100);
 
@@ -104,9 +104,48 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 					return b.activity.since.localeCompare(a.activity.since);
 				}
 
+				if (sort === "number-asc") {
+					return numberSort(a, b);
+				}
+
+				if (sort === "number-desc") {
+					return numberSort(b, a);
+				}
+
+				if (sort === "line-asc" || sort === "line-desc") {
+					const lineA = network?.lines.find((line) => line.id === a.activity.lineId);
+					const lineB = network?.lines.find((line) => line.id === b.activity.lineId);
+
+					// Vehicles without lines go to the end
+					if (!lineA && !lineB) return numberSort(a, b);
+					if (!lineA) return 1;
+					if (!lineB) return -1;
+
+					const lineNumberA = parseInt(lineA.number, 10);
+					const lineNumberB = parseInt(lineB.number, 10);
+
+					let lineComparison: number;
+					if (Number.isNaN(lineNumberA) && Number.isNaN(lineNumberB)) {
+						lineComparison = lineA.number.localeCompare(lineB.number);
+					} else if (Number.isNaN(lineNumberA)) {
+						lineComparison = 1;
+					} else if (Number.isNaN(lineNumberB)) {
+						lineComparison = -1;
+					} else {
+						lineComparison = lineNumberA - lineNumberB;
+					}
+
+					if (sort === "line-desc") {
+						lineComparison = -lineComparison;
+					}
+
+					// If line numbers are equal, sort by vehicle number
+					return lineComparison !== 0 ? lineComparison : numberSort(a, b);
+				}
+
 				return numberSort(a, b);
 			});
-	}, [debouncedFilter, operatorId, showArchived, searchParams, type, vehicles]);
+	}, [debouncedFilter, operatorId, showArchived, searchParams, type, vehicles, network]);
 
 	const onlineVehicles = useMemo(
 		() => filteredAndSortedVehicles.filter(({ activity }) => typeof activity.lineId !== "undefined"),
@@ -115,10 +154,10 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 
 	const activeVehiclesLabel = useMemo(() => {
 		if (showArchived)
-			return `${filteredAndSortedVehicles.length} véhicule${filteredAndSortedVehicles.length > 1 ? "s" : ""} archivé${filteredAndSortedVehicles.length > 1 ? "s" : ""}`;
-		if (filteredAndSortedVehicles.length === 0) return "Aucun véhicule n'existe avec ces critères de recherche";
-		if (onlineVehicles.length === 0) return `Aucun véhicule sur ${filteredAndSortedVehicles.length} en circulation`;
-		return `${onlineVehicles.length}/${filteredAndSortedVehicles.length} véhicule${filteredAndSortedVehicles.length > 1 ? "s" : ""} en circulation`;
+			return `${filteredAndSortedVehicles.length} vehicle${filteredAndSortedVehicles.length > 1 ? "s" : ""} archived`;
+		if (filteredAndSortedVehicles.length === 0) return "No vehicle exists with these search criteria";
+		if (onlineVehicles.length === 0) return `No vehicle out of ${filteredAndSortedVehicles.length} in circulation`;
+		return `${onlineVehicles.length}/${filteredAndSortedVehicles.length} vehicle${filteredAndSortedVehicles.length > 1 ? "s" : ""} in circulation`;
 	}, [filteredAndSortedVehicles, onlineVehicles, showArchived]);
 
 	return (
@@ -176,7 +215,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 									)}
 									<Input
 										className="h-10 w-1/2"
-										placeholder="numéro ou désignation"
+									placeholder="number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}
 									/>
@@ -193,11 +232,35 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="number">
-										<BinaryIcon />
+									<SelectItem value="number-asc">
+										<div className="flex items-center gap-2">
+											<ArrowDown01Icon className="size-4" />
+											<span>N° véhicule ↑</span>
+										</div>
+									</SelectItem>
+									<SelectItem value="number-desc">
+										<div className="flex items-center gap-2">
+											<ArrowDown10Icon className="size-4" />
+											<span>N° véhicule ↓</span>
+										</div>
+									</SelectItem>
+									<SelectItem value="line-asc">
+										<div className="flex items-center gap-2">
+											<ArrowDownAZIcon className="size-4" />
+											<span>N° ligne ↑</span>
+										</div>
+									</SelectItem>
+									<SelectItem value="line-desc">
+										<div className="flex items-center gap-2">
+											<ArrowDownZAIcon className="size-4" />
+											<span>N° ligne ↓</span>
+										</div>
 									</SelectItem>
 									<SelectItem value="activity">
-										<ClockIcon />
+										<div className="flex items-center gap-2">
+											<ClockIcon className="size-4" />
+											<span>Activité</span>
+										</div>
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -225,7 +288,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 					<VehiclesTable data={filteredAndSortedVehicles} searchParams={searchParams} />
 				</>
 			) : (
-				<p className="mt-5 text-center text-muted-foreground">Aucun véhicule n'est disponible pour ce réseau.</p>
+				<p className="mt-5 text-center text-muted-foreground">No vehicle is available for this network.</p>
 			)}
 		</section>
 	);

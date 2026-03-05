@@ -11,7 +11,7 @@ export function DisplayNextCallsSetting() {
 	return (
 		<div className="flex items-center space-x-2">
 			<Switch id={id} checked={displayNextCalls} onCheckedChange={setDisplayNextCalls} />
-			<Label htmlFor={id}>Afficher les prochains passages (si disponibles)</Label>
+			<Label htmlFor={id}>Display next stops (if available)</Label>
 		</div>
 	);
 }

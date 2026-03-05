@@ -68,7 +68,7 @@ export function OnlineVehiclesVehicleSelection({
 									/>
 								))
 						) : (
-							<p className="mt-3 text-center text-muted-foreground">Aucun véhicule ne circule sur cette ligne.</p>
+							<p className="mt-3 text-center text-muted-foreground">No vehicle is running on this line.</p>
 						)
 					) : (
 						// biome-ignore lint/suspicious/noArrayIndexKey: this is safe here

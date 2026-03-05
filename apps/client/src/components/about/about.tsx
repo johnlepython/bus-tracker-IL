@@ -13,41 +13,41 @@ const builtAt = dayjs(import.meta.env.VITE_BUILD_TIMESTAMP);
 
 const qanda = [
 	{
-		question: "Que signifie la couleur du satellite ?",
+		question: "What does the satellite color mean?",
 		answer: (
 			<>
 				<p className="mb-3">
-					<SatelliteDishIcon className="inline align-middle mr-1" color="#38A169" /> Position GPS fournie par
-					l'opérateur de transport.
+					<SatelliteDishIcon className="inline align-middle mr-1" color="#38A169" /> GPS position provided by
+					the transport operator.
 				</p>
 				<p className="mb-3">
-					<SatelliteDishIcon className="inline align-middle mr-1" color="#DD6B20" /> Position déterminée grâce aux
-					horaires temps-réel.
+					<SatelliteDishIcon className="inline align-middle mr-1" color="#DD6B20" /> Position determined from
+					real-time schedules.
 				</p>
 				<p>
-					<SatelliteDishIcon className="inline align-middle mr-1" color="#E53E3E" /> Position théorique du véhicule
-					(temps-réel indisponible).
+					<SatelliteDishIcon className="inline align-middle mr-1" color="#E53E3E" /> Theoretical vehicle position
+					(real-time unavailable).
 				</p>
 			</>
 		),
 	},
 	{
-		question: "Où se trouve le tableau des véhicules en ligne ?",
+		question: "Where is the online vehicles table?",
 		answer: (
 			<p>
-				Appuyez sur l'icône{" "}
+				Press the{" "}
 				<BusFrontIcon className="align-text-bottom border border-black dark:border-white inline p-0.5 pl-[3px]" />{" "}
-				présente sous les contrôles de zoom de la carte.
+				icon below the map zoom controls.
 			</p>
 		),
 	},
 	{
-		question: "J'ai une question à propos de l'application",
+		question: "I have a question about the application",
 		answer: (
 			<p>
-				Vous pouvez <Link to="mailto:contact@bus-tracker.fr">m'envoyer un e-mail</Link> ou me contacter via{" "}
+				You can <Link to="mailto:contact@bus-tracker.fr">send me an email</Link> or contact me via{" "}
 				<Link to="https://twitter.com/Keke27210" target="_blank">
-					mon Twitter
+					my Twitter
 				</Link>
 				.
 			</p>
@@ -60,22 +60,22 @@ export function About() {
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button size="icon" variant="on-branding-outline">
-					<LucideInfo aria-label="À propos" />
+					<LucideInfo aria-label="About" />
 				</Button>
 			</DialogTrigger>
 			<DialogContent aria-describedby={undefined} className="max-h-dvh overflow-y-auto">
 				<DialogHeader>
-					<DialogTitle>À propos de Bus Tracker</DialogTitle>
+					<DialogTitle>About Bus Tracker</DialogTitle>
 				</DialogHeader>
 				<p>
-					Build <code>{buildHash}</code> du {builtAt.format("LLLL")}.
+					Build <code>{buildHash}</code> from {builtAt.format("LLLL")}.
 				</p>
 				<p>
-					Un bug ? Une suggestion ? Une remarque ou une question ?<br />
-					Envoyez-moi un e-mail à <Link to="mailto:contact@bus-tracker.fr">contact@bus-tracker.fr</Link> 😉
+					A bug? A suggestion? A comment or a question?<br />
+					Send me an email at <Link to="mailto:contact@bus-tracker.fr">contact@bus-tracker.fr</Link> 😉
 				</p>
 				<Separator />
-				<DialogTitle className="text-center sm:text-left">Questions fréquentes</DialogTitle>
+				<DialogTitle className="text-center sm:text-left">Frequently Asked Questions</DialogTitle>
 				<Accordion type="single" collapsible>
 					{qanda.map(({ question, answer }) => (
 						<AccordionItem key={question} value={question}>
@@ -86,7 +86,7 @@ export function About() {
 				</Accordion>
 				<p className="text-center">
 					<Link to="https://kevinbioj.fr" target="_blank">
-						kevinbioj.fr <span className="text-xs">(un jour peut-être)</span>
+					kevinbioj.fr <span className="text-xs">(maybe one day)</span>
 					</Link>{" "}
 					•{" "}
 					<Link to="https://github.com/kevinbioj/bus-tracker-2" target="_blank">

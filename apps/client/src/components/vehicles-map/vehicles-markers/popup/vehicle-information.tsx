@@ -26,12 +26,12 @@ const positionIconDetails = {
 	ESTIMATED: {
 		iconColor: "#DD6B20",
 		tooltipClasses: "bg-orange-600 dark:bg-orange-700 text-white",
-		tooltipText: "Position estimée",
+		tooltipText: "Estimated position",
 	},
 	SCHEDULED: {
 		iconColor: "#E53E3E",
 		tooltipClasses: "bg-red-600 dark:bg-red-700 text-white",
-		tooltipText: "Position théorique",
+		tooltipText: "Theoretical position",
 	},
 } as const;
 
@@ -40,19 +40,19 @@ const occupancyIconDetails = {
 		IconElement: LowCrowdIcon,
 		iconClass: "fill-green-600 size-4",
 		tooltipClasses: "bg-green-600 dark:bg-green-700 text-white",
-		tooltipText: "Faible affluence",
+		tooltipText: "Low occupancy",
 	},
 	MEDIUM: {
 		IconElement: MediumCrowdIcon,
 		iconClass: "fill-orange-600 size-5",
 		tooltipClasses: "bg-orange-600 dark:bg-orange-700 text-white",
-		tooltipText: "Affluence moyenne",
+		tooltipText: "Medium occupancy",
 	},
 	HIGH: {
 		IconElement: HighCrowdIcon,
 		iconClass: "fill-red-600 size-5",
 		tooltipClasses: "bg-red-600 dark:bg-red-700 text-white",
-		tooltipText: "Forte affluence",
+		tooltipText: "High occupancy",
 	},
 	NO_PASSENGERS: {
 		IconElement: NoPassengersIcon,
@@ -75,10 +75,10 @@ export function VehicleInformation({ disableLinks, journey }: Readonly<VehicleIn
 	const recordedAt = useDebouncedMemo(
 		() => {
 			if (displayAbsoluteTime) return dayjs(journey.position.recordedAt).format("HH:mm:ss");
-			if (dayjs().isBefore(journey.position.recordedAt)) return "avant-départ";
+			if (dayjs().isBefore(journey.position.recordedAt)) return "pre-departure";
 
 			const duration = dayjs.duration(-dayjs().diff(journey.position.recordedAt));
-			if (Math.abs(duration.asSeconds()) < 10) return "à l'instant";
+			if (Math.abs(duration.asSeconds()) < 10) return "just now";
 			return duration.humanize(true);
 		},
 		3_000,

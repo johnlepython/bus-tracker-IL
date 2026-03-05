@@ -14,12 +14,12 @@ export function Settings() {
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button size="icon" variant="on-branding-outline">
-					<LucideSettings aria-label="Paramètres" />
+					<LucideSettings aria-label="Settings" />
 				</Button>
 			</DialogTrigger>
 			<DialogContent aria-describedby={undefined}>
 				<DialogHeader>
-					<DialogTitle>Paramètres de l'application</DialogTitle>
+					<DialogTitle>Application Settings</DialogTitle>
 				</DialogHeader>
 				<div className="mt-3 flex flex-col gap-4">
 					{/* <GeolocateOnStartSetting /> */}
