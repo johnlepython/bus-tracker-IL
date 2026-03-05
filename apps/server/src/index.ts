@@ -31,10 +31,11 @@ console.log("► Connecting to Redis.");
 const redis = createClient({
 	url: process.env.REDIS_URL ?? "redis://localhost:6379",
 });
-await redis.connect();
-
-await redis.subscribe("journeys", async (message) => {
-	console.log("► Redis message received (length: %d)", String(message).length);
+redis.on("error", (err) => {
+	console.error("► Redis client error:", err);
+});
+redis.on("message", async (message, channel) => {
+	console.log("► Redis message received on channel '%s' (length: %d)", channel, String(message).length);
 	let didWarn = false;
 	let vehicleJourneys: VehicleJourney[];
 
@@ -61,6 +62,8 @@ await redis.subscribe("journeys", async (message) => {
 		console.error("► Error processing journey batch:", error);
 	}
 });
+await redis.connect();
+await redis.subscribe("journeys");
 
 console.log("► Listening on port %d.\n", port);
 serve({ fetch: hono.fetch, port });
