@@ -12,11 +12,13 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { BusIcon, ShipIcon, TramwayIcon } from "~/icons/means-of-transport";
+import { BusIcon, ShipIcon, TramwayIcon, TrainIcon } from "~/icons/means-of-transport";
 import { cn } from "~/utils/utils";
+import { isTrainNumber } from "~/utils/is-train";
 
 const filterableVehicleTypes = {
 	ALL: <span className="text-muted-foreground">Type</span>,
+	TRAIN: <TrainIcon className="size-5" />,
 	TRAMWAY: <TramwayIcon className="size-5" />,
 	BUS: <BusIcon className="size-5" />,
 	FERRY: <ShipIcon className="size-5" />,
@@ -50,10 +52,17 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 	const hasArchivedVehicles = useMemo(() => vehicles.some((vehicle) => vehicle.archivedAt !== null), [vehicles]);
 
 	const availableNetworkTypeFilters = useMemo(() => {
-		const networkVehicleTypes = new Set(vehicles.map(({ type }) => type));
+		const networkVehicleTypes = new Set<string>();
+		vehicles.forEach(({ type, number }) => {
+			if (isTrainNumber(number)) {
+				networkVehicleTypes.add("TRAIN");
+			} else {
+				networkVehicleTypes.add(type);
+			}
+		});
 		return [
 			"ALL",
-			...Object.keys(filterableVehicleTypes).filter((type) => networkVehicleTypes.has(type as Vehicle["type"])),
+			...Object.keys(filterableVehicleTypes).filter((type) => networkVehicleTypes.has(type) && type !== "ALL"),
 		];
 	}, [vehicles]);
 
@@ -86,7 +95,11 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 			.filter((v) => {
 				if (showArchived && v.archivedAt === null) return false;
 				if (!showArchived && v.archivedAt !== null) return false;
-				if (type?.trim().length && type !== "ALL" && v.type !== type) return false;
+				if (type?.trim().length && type !== "ALL") {
+					const isVehicleTrain = isTrainNumber(v.number);
+					if (type === "TRAIN" && !isVehicleTrain) return false;
+					if (type !== "TRAIN" && (isVehicleTrain || v.type !== type)) return false;
+				}
 				if (operatorId !== "" && operatorId !== "ALL" && +operatorId !== v.operatorId) return false;
 				if (debouncedFilter === "") return true;
 				return pattern instanceof RegExp
@@ -143,9 +156,22 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 					return lineComparison !== 0 ? lineComparison : numberSort(a, b);
 				}
 
+				if (sort === "carrier-asc" || sort === "carrier-desc") {
+					const carrierNameA = a.operator?.name ?? "";
+					const carrierNameB = b.operator?.name ?? "";
+
+					let carrierComparison = carrierNameA.localeCompare(carrierNameB);
+					if (sort === "carrier-desc") {
+						carrierComparison = -carrierComparison;
+					}
+
+					// If carrier names are equal, sort by vehicle number
+					return carrierComparison !== 0 ? carrierComparison : numberSort(a, b);
+				}
+
 				return numberSort(a, b);
 			});
-	}, [debouncedFilter, operatorId, showArchived, searchParams, type, vehicles, network]);
+	}, [debouncedFilter, operatorId, showArchived, searchParams, type, sort, vehicles, network]);
 
 	const onlineVehicles = useMemo(
 		() => filteredAndSortedVehicles.filter(({ activity }) => typeof activity.lineId !== "undefined"),
@@ -166,19 +192,19 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 				<>
 					<div
 						className={cn(
-							"grid gap-1 mt-2",
-							hasArchivedVehicles ? "grid-cols-[1fr_4.5rem_2.3rem]" : "grid-cols-[1fr_4.5rem]",
+							"grid gap-2 mt-2",
+							hasArchivedVehicles ? "grid-cols-[1fr_10rem_2.3rem]" : "grid-cols-[1fr_10rem]",
 						)}
 					>
 						{/* Filters */}
 						<div className="flex flex-col gap-1">
 							<Label className="inline-flex items-center gap-1" htmlFor="filter">
-								<FilterIcon size={16} /> Filtrer par
+							<FilterIcon size={16} /> Filter by
 							</Label>
 							<div className="flex gap-1">
 								{availableNetworkTypeFilters.length > 2 && (
 									<Select value={type} onValueChange={(newType) => updateSearchParam("type", newType)}>
-										<SelectTrigger aria-label="Type" className="h-10 w-[4.5rem]">
+										<SelectTrigger aria-label="Type" className="h-10 min-w-[5rem]">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
@@ -190,18 +216,18 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 										</SelectContent>
 									</Select>
 								)}
-								<div className="flex flex-1 gap-1 max-w-96">
+								<div className="flex flex-1 gap-1">
 									{network.operators.length > 0 && (
 										<Select
 											value={operatorId}
 											onValueChange={(newOperatorId) => updateSearchParam("operatorId", newOperatorId)}
 										>
-											<SelectTrigger aria-label="Opérateur" className="h-10 w-1/2">
+											<SelectTrigger aria-label="Operator" className="h-10 min-w-[6rem]">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="ALL">
-													<span className="text-muted-foreground">Opérateur</span>
+													<span className="text-muted-foreground">Operator</span>
 												</SelectItem>
 												{network.operators
 													.toSorted((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
@@ -214,8 +240,8 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 										</Select>
 									)}
 									<Input
-										className="h-10 w-1/2"
-									placeholder="number or designation"
+										className="h-10 flex-1"
+										placeholder="number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}
 									/>
@@ -225,41 +251,53 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 						{/* Sort */}
 						<div className="flex flex-col gap-1">
 							<Label className="inline-flex items-center gap-1" htmlFor="sort">
-								<SortAscIcon size={16} /> Tri
+								<SortAscIcon size={16} /> Sort
 							</Label>
 							<Select value={sort} onValueChange={(newSort) => updateSearchParam("sort", newSort)}>
-								<SelectTrigger aria-label="Trier" className="h-10">
+								<SelectTrigger aria-label="Sort" className="h-10 w-full">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="number-asc">
 										<div className="flex items-center gap-2">
 											<ArrowDown01Icon className="size-4" />
-											<span>N° véhicule ↑</span>
+									<span>Vehicle ascending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="number-desc">
 										<div className="flex items-center gap-2">
 											<ArrowDown10Icon className="size-4" />
-											<span>N° véhicule ↓</span>
+									<span>Vehicle descending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="line-asc">
 										<div className="flex items-center gap-2">
 											<ArrowDownAZIcon className="size-4" />
-											<span>N° ligne ↑</span>
+									<span>Line ascending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="line-desc">
 										<div className="flex items-center gap-2">
 											<ArrowDownZAIcon className="size-4" />
-											<span>N° ligne ↓</span>
+									<span>Line descending</span>
+										</div>
+									</SelectItem>
+									<SelectItem value="carrier-asc">
+										<div className="flex items-center gap-2">
+											<ArrowDownAZIcon className="size-4" />
+											<span>Carrier ascending</span>
+										</div>
+									</SelectItem>
+									<SelectItem value="carrier-desc">
+										<div className="flex items-center gap-2">
+											<ArrowDownZAIcon className="size-4" />
+											<span>Carrier descending</span>
 										</div>
 									</SelectItem>
 									<SelectItem value="activity">
 										<div className="flex items-center gap-2">
 											<ClockIcon className="size-4" />
-											<span>Activité</span>
+											<span>Activity</span>
 										</div>
 									</SelectItem>
 								</SelectContent>

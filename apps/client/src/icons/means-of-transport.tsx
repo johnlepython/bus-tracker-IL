@@ -45,3 +45,20 @@ export function ShipIcon(props: Readonly<IconProps>) {
 		</svg>
 	);
 }
+
+export function TrainIcon(props: Readonly<IconProps>) {
+	return (
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 100" {...props}>
+			<title>Train</title>
+			<path
+				fill="currentColor"
+				d="M20 15 L80 15 C85 15 85 20 85 25 L85 70 C85 75 85 80 80 80 L20 80 C15 80 15 75 15 70 L15 25 C15 20 15 15 20 15 Z"
+			/>
+			<rect x="25" y="20" width="50" height="25" fill="currentColor" opacity="0.6" />
+			<circle cx="28" cy="82" r="5" fill="currentColor" />
+			<circle cx="72" cy="82" r="5" fill="currentColor" />
+			<rect x="10" y="65" width="80" height="3" fill="currentColor" />
+			<rect x="8" y="70" width="84" height="2" fill="currentColor" />
+		</svg>
+	);
+}

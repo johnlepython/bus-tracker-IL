@@ -9,6 +9,7 @@ export type VehicleJourneyMarker = {
 	id: string;
 	lineNumber?: string;
 	vehicleNumber?: string;
+	operatorName?: string;
 	color?: string;
 	fillColor?: string;
 	position: { latitude: number; longitude: number; bearing?: number; type: "GPS" | "COMPUTED" };
@@ -38,6 +39,7 @@ export type DisposeableVehicleJourney = {
 	occupancy?: "LOW" | "MEDIUM" | "HIGH" | "NO_PASSENGERS";
 	networkId: number;
 	operator?: number;
+	operatorName?: string;
 	vehicle?: { id?: number; number: string; designation?: string };
 	serviceDate?: string;
 	girouette?: GirouetteData;

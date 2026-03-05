@@ -7,7 +7,7 @@ import { createClient } from "redis";
 import { migrateDatabase } from "./core/database/migrate.js";
 import { handleVehicleBatch } from "./vehicle-handling/handle-vehicle-batch.js";
 
-import { port } from "./options.js";
+import { port, redisUrl } from "./options.js";
 import { hono } from "./server.js";
 
 import "./controllers/announcements.js";
@@ -27,19 +27,30 @@ console.log(`,-----.                  ,--------.                   ,--.         
 console.log("► Running database migrations.");
 await migrateDatabase();
 
-console.log("► Connecting to Redis.");
+console.log("► Connecting to Redis at: %s", redisUrl);
 const redis = createClient({
-	url: process.env.REDIS_URL ?? "redis://localhost:6379",
+	url: redisUrl,
 });
 await redis.connect();
 
-await redis.subscribe("journeys", async (message) => {
+// Create a separate subscriber connection for pub/sub (required by redis v5)
+const subscriber = createClient({
+	url: redisUrl,
+});
+subscriber.on("error", (err) => {
+	console.error("► Redis subscriber error:", err);
+});
+await subscriber.connect();
+await subscriber.subscribe("journeys", async (message, channel) => {
+	console.log("► Received message on channel: %s", channel);
+
 	let didWarn = false;
 	let vehicleJourneys: VehicleJourney[];
 
 	try {
 		const payload = JSON.parse(message);
 		if (!Array.isArray(payload)) throw new Error("Payload is not an array");
+		console.log(`► Received journey batch: ${payload.length} journeys`);
 		vehicleJourneys = payload.flatMap((entry) => {
 			const parsed = vehicleJourneySchema.safeParse(entry);
 			if (!parsed.success) {
@@ -52,12 +63,12 @@ await redis.subscribe("journeys", async (message) => {
 			}
 			return parsed.data;
 		});
-	} catch (error) {
-		console.error(error);
-		return;
-	}
+		console.log(`► Validated ${vehicleJourneys.length} journeys`);
 
-	await handleVehicleBatch(vehicleJourneys);
+		await handleVehicleBatch(vehicleJourneys);
+	} catch (error) {
+		console.error("► Error processing journey batch:", error);
+	}
 });
 
 console.log("► Listening on port %d.\n", port);

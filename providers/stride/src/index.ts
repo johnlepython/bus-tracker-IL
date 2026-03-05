@@ -14,6 +14,7 @@ const {
   REDIS_PASSWORD,
   REDIS_CHANNEL = "journeys",
   POLL_INTERVAL_MS = "60000",
+  CACHE_REFRESH_INTERVAL_MS = "43200000", // 12 hours
 } = process.env;
 
 if (NETWORK_REF === undefined) throw new Error("NETWORK_REF must be defined");
@@ -27,11 +28,18 @@ const redis = createClient({
 await redis.connect();
 console.log("%s ► Connected! Journeys will be published into '%s'.", Temporal.Now.instant(), REDIS_CHANNEL);
 
+// Cache metrics
+let cacheHits = 0;
+let cacheMisses = 0;
+const missedLineRefs = new Set<number>();
+
 /**
  * Build route cache from gtfs_routes API for destination lookup
+ * Uses current date to ensure cache is up-to-date
  */
 async function buildRouteCache(): Promise<Map<number, { commercialNumber: string; routeLongName: string; direction: string }>> {
-  console.log("%s ► Building route cache from gtfs_routes...", Temporal.Now.instant());
+  const today = Temporal.Now.plainDateISO().toString(); // Dynamic date (e.g., "2026-03-05")
+  console.log("%s ► Building route cache from gtfs_routes for date: %s", Temporal.Now.instant(), today);
   const routeCache = new Map();
   
   try {
@@ -40,7 +48,7 @@ async function buildRouteCache(): Promise<Map<number, { commercialNumber: string
     
     for (let page = 0; page < MAX_PAGES; page++) {
       const offset = page * LIMIT;
-      const url = `${STRIDE_API_URL}/gtfs_routes/list?date=2025-01-06&limit=${LIMIT}&offset=${offset}`;
+      const url = `${STRIDE_API_URL}/gtfs_routes/list?date=${today}&limit=${LIMIT}&offset=${offset}`;
       
       const response = await fetch(url);
       const routes = await response.json();
@@ -92,12 +100,54 @@ function extractDestination(routeLongName: string, direction: string): string | 
 // Initialize empty route cache, build in background
 let routeCache = new Map<number, { commercialNumber: string; routeLongName: string; direction: string }>();
 
+/**
+ * Log cache metrics periodically
+ */
+function logCacheMetrics() {
+  const total = cacheHits + cacheMisses;
+  if (total === 0) return;
+  
+  const hitRate = (cacheHits / total * 100).toFixed(1);
+  
+  console.log("%s ► Cache metrics: hits=%d, misses=%d, rate=%s%%",
+    Temporal.Now.instant(), cacheHits, cacheMisses, hitRate);
+  
+  if (missedLineRefs.size > 0) {
+    console.log("%s ► Missed line_refs (sample): %s", 
+      Temporal.Now.instant(), 
+      Array.from(missedLineRefs).slice(0, 20).join(', '));
+  }
+  
+  // Reset counters
+  cacheHits = 0;
+  cacheMisses = 0;
+  missedLineRefs.clear();
+}
+
 // Build route cache in background without blocking startup
 (async () => {
   try {
     routeCache = await buildRouteCache();
+    
+    // Refresh cache periodically (default: every 12 hours)
+    const refreshInterval = Number(CACHE_REFRESH_INTERVAL_MS);
+    console.log("%s ► Cache will refresh every %d ms (%d hours)",
+      Temporal.Now.instant(), refreshInterval, refreshInterval / 3600000);
+    
+    setInterval(async () => {
+      console.log("%s ► Refreshing route cache...", Temporal.Now.instant());
+      try {
+        routeCache = await buildRouteCache();
+      } catch (err) {
+        console.error("%s ► Cache refresh failed: %s", Temporal.Now.instant(), String(err));
+      }
+    }, refreshInterval);
+    
+    // Log cache metrics every 5 minutes
+    setInterval(logCacheMetrics, 5 * 60 * 1000);
+    
   } catch (err) {
-    console.error("%s ► Background route cache failed: %s", Temporal.Now.instant(), String(err));
+    console.error("%s ► Initial cache build failed: %s", Temporal.Now.instant(), String(err));
   }
 })();
 
@@ -286,18 +336,32 @@ async function run() {
         recordedAt,
       };
 
-      const id = `${NETWORK_REF}:${OPERATOR_REF ?? ""}:VehicleTracking:${vehicleRefRaw}`;
+      // Use operator_ref from the route (each line has an operator)
+      const operatorRef = loc.siri_route__operator_ref ? String(loc.siri_route__operator_ref) : (OPERATOR_REF ?? "");
+      const id = `${NETWORK_REF}:${operatorRef}:VehicleTracking:${vehicleRefRaw}`;
       
       // Get route data from cache for commercial number and destination
-      const routeData = loc.siri_route__line_ref ? routeCache.get(loc.siri_route__line_ref) : undefined;
+      const lineRef = loc.siri_route__line_ref;
+      const routeData = lineRef ? routeCache.get(lineRef) : undefined;
+      
+      // Track cache metrics
+      if (lineRef) {
+        if (routeData) {
+          cacheHits++;
+        } else {
+          cacheMisses++;
+          missedLineRefs.add(lineRef);
+        }
+      }
+      
       const destination = routeData ? extractDestination(routeData.routeLongName, routeData.direction) : undefined;
 
       vehicleJourneys.push({
         id,
         position,
         networkRef: NETWORK_REF,
-        operatorRef: OPERATOR_REF,
-        vehicleRef: vehicleIdToRef(vehicleRefRaw),
+        operatorRef: operatorRef,
+        vehicleRef: `${NETWORK_REF}:${operatorRef}:Vehicle:${vehicleRefRaw}`,
         line: loc.siri_route__line_ref
           ? {
               ref: `${NETWORK_REF}:Line:${loc.siri_route__line_ref}`,

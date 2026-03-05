@@ -8,8 +8,8 @@
 @custom-variant hover (&:hover);
 
 @theme inline {
-	--animate-route-number: route-number 3s linear infinite;
-	--animate-page: page 6s linear infinite;
+	--animate-route-number: route-number 6s linear infinite;
+	--animate-page: page 12s linear infinite;
 	--animate-accordion-down: accordion-down 0.2s ease-out;
 	--animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -63,19 +63,19 @@
 
 	@keyframes route-number {
 		0% {
-			transform: translateX(100%);
+			transform: translateX(-100%);
 		}
 		100% {
-			transform: translateX(-100%);
+			transform: translateX(100%);
 		}
 	}
 
 	@keyframes page {
 		0% {
-			transform: translateX(100%);
+			transform: translateX(-100%);
 		}
 		100% {
-			transform: translateX(-100%);
+			transform: translateX(100%);
 		}
 	}
 

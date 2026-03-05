@@ -21,7 +21,7 @@ export function VehicleGirouette({ journey, width }: Readonly<VehicleGirouettePr
 	const girouette = journey.girouette;
 
 	const line = useLine(girouette ? undefined : journey.networkId, journey.lineId);
-	const destination = journey.destination ?? journey.calls?.at(-1)?.stopName ?? "Destination inconnue";
+	const destination = journey.destination ?? journey.calls?.at(-1)?.stopName ?? "Unknown Destination";
 
 	const defaultRouteNumber = line?.girouetteNumber ?? line?.number ?? "";
 

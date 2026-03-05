@@ -58,7 +58,7 @@ const occupancyIconDetails = {
 		IconElement: NoPassengersIcon,
 		iconClass: "fill-red-600 size-5",
 		tooltipClasses: "bg-red-600 dark:bg-red-700 text-white",
-		tooltipText: "Ne prend pas de voyageur",
+		tooltipText: "Does not take passengers",
 	},
 } as const;
 
@@ -85,7 +85,10 @@ export function VehicleInformation({ disableLinks, journey }: Readonly<VehicleIn
 		[journey],
 	);
 
-	const networkIdentifier = network?.logoHref ? (
+	// Display operator name if available, otherwise display network name/logo
+	const operatorOrNetworkDisplay = journey.operatorName ? (
+		<span className="text-xs font-medium">{journey.operatorName}</span>
+	) : network?.logoHref ? (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<picture className="min-w-12 w-fit">
@@ -128,10 +131,10 @@ export function VehicleInformation({ disableLinks, journey }: Readonly<VehicleIn
 		<div className="grid grid-cols-[3.5rem_1fr_3.5rem] px-1.5 py-1">
 			{network?.hasVehiclesFeature ? (
 				<Button asChild className="" size="xs" variant="ghost">
-					{disableLinks ? networkIdentifier : <Link to={`/data/networks/${network?.id}`}>{networkIdentifier}</Link>}
+					{disableLinks ? operatorOrNetworkDisplay : <Link to={`/data/networks/${network?.id}`}>{operatorOrNetworkDisplay}</Link>}
 				</Button>
 			) : (
-				networkIdentifier
+				operatorOrNetworkDisplay
 			)}
 			<span className="my-auto text-center">
 				{vehicleNumber ? (
