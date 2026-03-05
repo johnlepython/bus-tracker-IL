@@ -58,7 +58,7 @@ const occupancyIconDetails = {
 		IconElement: NoPassengersIcon,
 		iconClass: "fill-red-600 size-5",
 		tooltipClasses: "bg-red-600 dark:bg-red-700 text-white",
-		tooltipText: "Ne prend pas de voyageur",
+		tooltipText: "Does not take passengers",
 	},
 } as const;
 
