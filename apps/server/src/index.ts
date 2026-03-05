@@ -34,19 +34,16 @@ const redis = createClient({
 await redis.connect();
 
 // Create a separate subscriber connection for pub/sub (required by redis v5)
-// Disable RESP3 to prevent protocol decoding issues with string messages
 const subscriber = createClient({
 	url: redisUrl,
-	socket: {
-		reconnectStrategy: (retries) => Math.min(retries * 50, 500),
-	},
-	RESP: 2, // Force RESP2 protocol to avoid decoder issues
 });
 subscriber.on("error", (err) => {
 	console.error("► Redis subscriber error:", err);
 });
 subscriber.on("message", (message, channel) => {
-	console.log("► Redis message received on channel '%s' (length: %d)", channel, String(message).length);
+	console.log("► Redis message type: %s, channel: %s, length: %d", typeof message, channel, Buffer.from(message).length);
+	const messageStr = typeof message === 'string' ? message : Buffer.from(message).toString('utf-8');
+	console.log("► Message preview: %s", messageStr.substring(0, 100));
 	
 	// Handle async operations without blocking
 	(async () => {
@@ -54,7 +51,8 @@ subscriber.on("message", (message, channel) => {
 		let vehicleJourneys: VehicleJourney[];
 
 		try {
-			const payload = JSON.parse(message);
+			const messageStr = typeof message === 'string' ? message : Buffer.from(message).toString('utf-8');
+			const payload = JSON.parse(messageStr);
 			if (!Array.isArray(payload)) throw new Error("Payload is not an array");
 			console.log(`► Received journey batch: ${payload.length} journeys`);
 			vehicleJourneys = payload.flatMap((entry) => {
