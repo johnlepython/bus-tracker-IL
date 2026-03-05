@@ -42,10 +42,10 @@ export function VehicleMarkerPopup({ embedMode, journeyId }: Readonly<VehicleDet
 		<div className="font-[Achemine] leading-tight mb-1.5 text-[13px]" style={{ width: popupWidth }}>
 			{isError ? (
 				<p className="px-3 text-balance text-center">
-					<span className="font-bold text-lg">☠️ Entry not found</span>
+					<span className="font-bold text-lg">☠️ Entry Not Found</span>
 					<br />
 					<span className="text-muted-foreground">
-						This entry is no longer current, it should disappear on the next map refresh.
+						This entry is no longer current and should disappear on the next map refresh.
 					</span>
 				</p>
 			) : typeof journey !== "undefined" ? (
