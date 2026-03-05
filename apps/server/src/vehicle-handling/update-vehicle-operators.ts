@@ -10,8 +10,8 @@ import { vehiclesTable } from "../core/database/schema.js";
 export async function updateVehicleOperators(updates: [number, number][]) {
 	if (updates.length === 0) return;
 
-	// Use SQL CASE statement for efficient batch update
-	const cases = updates.map(([vehicleId, operatorId]) => sql`WHEN ${vehicleId} THEN ${operatorId}`);
+	// Use SQL CASE statement for efficient batch update with explicit integer casting
+	const cases = updates.map(([vehicleId, operatorId]) => sql`WHEN ${vehicleId} THEN ${sql.raw(String(operatorId))}`);
 
 	await database
 		.update(vehiclesTable)
