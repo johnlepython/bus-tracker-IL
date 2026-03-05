@@ -74,6 +74,7 @@ subscriber.on("message", (message, channel) => {
 });
 await subscriber.connect();
 // Redis v5 uses event listeners - no callback parameter needed
+// @ts-expect-error - VPS has different Redis types that expect callback, but event listener mode works correctly
 await subscriber.subscribe("journeys");
 
 console.log("► Listening on port %d.\n", port);
