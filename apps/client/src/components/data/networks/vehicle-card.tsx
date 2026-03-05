@@ -51,13 +51,19 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 			return <Zzz className="h-full mx-auto" />;
 		}
 
-		// Fallback: show line if no operator
-		if (typeof line === "undefined") return <Zzz className="h-full mx-auto" />;
-
-		return line.cartridgeHref ? (
-			<img className="h-full mx-auto object-contain" src={line.cartridgeHref} alt={line.number} />
-		) : (
-			<p className="flex items-center justify-center h-full font-bold text-2xl">{line.number}</p>
+		return (
+			<div className="flex h-full flex-col items-center justify-center px-1 text-center">
+				{typeof line !== "undefined" ? (
+					line.cartridgeHref ? (
+						<img className="h-6 object-contain" src={line.cartridgeHref} alt={line.number} />
+					) : (
+						<p className="font-bold text-lg leading-none">{line.number}</p>
+					)
+				) : (
+					<p className="font-bold text-lg leading-none">—</p>
+				)}
+				<p className="font-bold text-sm leading-tight">{vehicle.operator?.name ?? "—"}</p>
+			</div>
 		);
 	}, [line, vehicle]);
 
