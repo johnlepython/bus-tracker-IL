@@ -104,7 +104,10 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 		}
 
 		if (vehicleOperatorUpdates.size > 0) {
+		try {
 			await updateVehicleOperators(Array.from(vehicleOperatorUpdates.entries()));
+		} catch (error) {
+			console.error(`► Error updating vehicle operators:`, error);
 		}
 
 		registerActivities(registerableActivities);
