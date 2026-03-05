@@ -30,7 +30,7 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 				if (networkRef !== "SNCF" && typeof vehicleJourney.vehicleRef !== "undefined") {
 					vehicleRefAcc.add(vehicleJourney.vehicleRef);
 				}
-				
+
 				if (typeof vehicleJourney.operatorRef !== "undefined") {
 					operatorRefAcc.add(vehicleJourney.operatorRef);
 				}
@@ -42,12 +42,22 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 
 		const lines = keyBy(await importLines(network, Array.from(lineDatas.values()), now), (line) => line.references!);
 		const vehicles = keyBy(await importVehicles(network, vehicleRefs), (vehicle) => vehicle.ref);
-		
+
 		// Import operators and create a map operatorRef → operatorId
 		const operators = new Map<string, number>();
 		for (const operatorRef of operatorRefs) {
-			
-			// Get operator ID from operatorRef
+			const operator = await importOperator(networkRef, operatorRef);
+			operators.set(operatorRef, operator.id);
+		}
+
+		const registerableActivities: DisposeableVehicleJourney[] = [];
+		const vehicleOperatorUpdates = new Map<number, number>();
+
+		for (const vehicleJourney of vehicleJourneys) {
+			const timeSince = Temporal.Now.instant().since(vehicleJourney.updatedAt);
+			if (timeSince.total("minutes") >= 10) continue;
+
+			const line = vehicleJourney.line ? lines.get(vehicleJourney.line.ref) : undefined;
 			const operatorId = vehicleJourney.operatorRef ? operators.get(vehicleJourney.operatorRef) : undefined;
 
 			const disposeableJourney: DisposeableVehicleJourney = {
@@ -59,21 +69,7 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 				position: vehicleJourney.position,
 				occupancy: vehicleJourney.occupancy,
 				networkId: network.id,
-				operatorId: operatorIporal.Now.instant().since(vehicleJourney.updatedAt);
-			if (timeSince.total("minutes") >= 10) continue;
-
-			const line = vehicleJourney.line ? lines.get(vehicleJourney.line!.ref) : undefined;
-
-			const disposeableJourney: DisposeableVehicleJourney = {
-				id: vehicleJourney.id.replaceAll("/", "_"),
-				lineId: line?.id,
-				direction: vehicleJourney.direction,
-				destination: vehicleJourney.destination,
-				calls: vehicleJourney.calls,
-				position: vehicleJourney.position,
-				occupancy: vehicleJourney.occupancy,
-				networkId: network.id,
-				operatorId: undefined,
+				operatorId,
 				vehicle: undefined,
 				serviceDate: vehicleJourney.serviceDate,
 				updatedAt: vehicleJourney.updatedAt,
@@ -85,9 +81,11 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 				const vehicle = vehicles.get(vehicleJourney.vehicleRef);
 				if (typeof vehicle !== "undefined") {
 					disposeableJourney.vehicle = {
-					
-					// Track operator assignment for vehicle (if operator changed or not set)
-					if (operatorId !== undefined && vehicle.operatorId !== operatorId) {
+						id: vehicle.id,
+						number: vehicle.number,
+					};
+
+					if (typeof operatorId === "number" && vehicle.operatorId !== operatorId) {
 						vehicleOperatorUpdates.set(vehicle.id, operatorId);
 					}
 
@@ -99,13 +97,9 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 				}
 			}
 		}
-		
-		// Update vehicle operators in batch
+
 		if (vehicleOperatorUpdates.size > 0) {
-			await updateVehicleOperators(Array.from(vehicleOperatorUpdates.entries()));		number: vehicleJourney.vehicleRef.slice(nthIndexOf(vehicleJourney.vehicleRef, ":", 3) + 1),
-					};
-				}
-			}
+			await updateVehicleOperators(Array.from(vehicleOperatorUpdates.entries()));
 		}
 
 		registerActivities(registerableActivities);
