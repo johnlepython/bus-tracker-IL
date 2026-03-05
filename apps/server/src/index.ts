@@ -73,9 +73,8 @@ subscriber.on("message", (message, channel) => {
 	})();
 });
 await subscriber.connect();
-await subscriber.subscribe("journeys", () => {
-	// Message handling is done via the 'message' event listener above
-});
+// Redis v5 uses event listeners - no callback parameter needed
+await subscriber.subscribe("journeys");
 
 console.log("► Listening on port %d.\n", port);
 serve({ fetch: hono.fetch, port });
