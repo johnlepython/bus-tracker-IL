@@ -32,9 +32,19 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 				.otherwise(() => <ArchiveIcon className="size-full" />);
 		}
 
-		// Display the operator/carrier name instead of line number
 		if (vehicle.operator) {
-			return <p className="flex items-center justify-center h-full font-bold text-lg text-center px-1">{vehicle.operator.name}</p>;
+			return (
+				<div className="flex h-full flex-col items-center justify-center px-1 text-center">
+					{typeof line !== "undefined" && (
+						line.cartridgeHref ? (
+							<img className="h-6 object-contain" src={line.cartridgeHref} alt={line.number} />
+						) : (
+							<p className="font-bold text-lg leading-none">{line.number}</p>
+						)
+					)}
+					<p className="font-bold text-sm leading-tight">{vehicle.operator.name}</p>
+				</div>
+			);
 		}
 
 		if (vehicle.activity?.status !== "online") {
