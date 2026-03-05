@@ -13,10 +13,12 @@ import { match, P } from "ts-pattern";
 
 import type { Vehicle } from "~/api/vehicles";
 import { useLine } from "~/hooks/use-line";
-import { BusIcon, ShipIcon, TramwayIcon } from "~/icons/means-of-transport";
+import { BusIcon, ShipIcon, TramwayIcon, TrainIcon } from "~/icons/means-of-transport";
 import { Zzz } from "~/icons/zzz";
+import { isTrainNumber } from "~/utils/is-train";
 
 export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
+	const isTrain = isTrainNumber(vehicle.number);
 	const line = useLine(vehicle.networkId, vehicle.activity?.status === "online" ? vehicle.activity.lineId : undefined);
 
 	const activeLine = useMemo(() => {
@@ -51,22 +53,26 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 			}}
 		>
 			<div className="flex justify-center">
-				{match(vehicle.type)
-					.with(P.union("SUBWAY", "TRAMWAY"), () => (
-						<TramwayIcon className="my-auto size-6 sm:size-8" style={{ fill: line?.color ?? undefined }} />
-					))
-					.with("FERRY", () => (
-						<ShipIcon className="my-auto size-6 sm:size-8" style={{ fill: line?.color ?? undefined }} />
-					))
-					.otherwise(() => (
-						<BusIcon className="my-auto size-6 sm:size-8" style={{ fill: line?.color ?? undefined }} />
-					))}
+				{isTrain ? (
+					<TrainIcon className="my-auto size-6 sm:size-8" style={{ fill: line?.color ?? undefined }} />
+				) : (
+					match(vehicle.type)
+						.with(P.union("SUBWAY", "TRAMWAY"), () => (
+							<TramwayIcon className="my-auto size-6 sm:size-8" style={{ fill: line?.color ?? undefined }} />
+						))
+						.with("FERRY", () => (
+							<ShipIcon className="my-auto size-6 sm:size-8" style={{ fill: line?.color ?? undefined }} />
+						))
+						.otherwise(() => (
+							<BusIcon className="my-auto size-6 sm:size-8" style={{ fill: line?.color ?? undefined }} />
+						))
+				)}
 				<div
 					className="border-l-[1px] border-black dark:border-white mx-2 my-1"
 					style={{ borderColor: line?.textColor ?? undefined }}
 				/>
 				<h2 className="flex font-bold gap-1.5 justify-center ml-1 tabular-nums text-2xl sm:my-auto sm:text-4xl sm:min-w-32">
-					{vehicle.number}
+					{isTrain ? (line ? line.number : "—") : vehicle.number}
 				</h2>
 			</div>
 			<div
@@ -74,7 +80,13 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 				style={{ borderColor: line?.textColor ?? undefined }}
 			/>
 			<div className="flex gap-2 flex-1 mt-2 mx-2 sm:mt-0 sm:mx-0">
-				<div className="h-12 min-w-16 lg:max-w-36">{activeLine}</div>
+				<div className="h-12 min-w-16 lg:max-w-36">
+					{isTrain ? (
+						<p className="flex items-center justify-center h-full font-bold text-2xl">{vehicle.number}</p>
+					) : (
+						activeLine
+					)}
+				</div>
 				<div className="flex flex-col justify-center">
 					{vehicle.designation && <p className="font-bold">{vehicle.designation}</p>}
 					{vehicle.activity?.status === "online" ? (

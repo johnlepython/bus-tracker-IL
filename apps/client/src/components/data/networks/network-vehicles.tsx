@@ -12,11 +12,13 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { BusIcon, ShipIcon, TramwayIcon } from "~/icons/means-of-transport";
+import { BusIcon, ShipIcon, TramwayIcon, TrainIcon } from "~/icons/means-of-transport";
 import { cn } from "~/utils/utils";
+import { isTrainNumber } from "~/utils/is-train";
 
 const filterableVehicleTypes = {
 	ALL: <span className="text-muted-foreground">Type</span>,
+	TRAIN: <TrainIcon className="size-5" />,
 	TRAMWAY: <TramwayIcon className="size-5" />,
 	BUS: <BusIcon className="size-5" />,
 	FERRY: <ShipIcon className="size-5" />,
@@ -50,10 +52,17 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 	const hasArchivedVehicles = useMemo(() => vehicles.some((vehicle) => vehicle.archivedAt !== null), [vehicles]);
 
 	const availableNetworkTypeFilters = useMemo(() => {
-		const networkVehicleTypes = new Set(vehicles.map(({ type }) => type));
+		const networkVehicleTypes = new Set<string>();
+		vehicles.forEach(({ type, number }) => {
+			if (isTrainNumber(number)) {
+				networkVehicleTypes.add("TRAIN");
+			} else {
+				networkVehicleTypes.add(type);
+			}
+		});
 		return [
 			"ALL",
-			...Object.keys(filterableVehicleTypes).filter((type) => networkVehicleTypes.has(type as Vehicle["type"])),
+			...Object.keys(filterableVehicleTypes).filter((type) => networkVehicleTypes.has(type) && type !== "ALL"),
 		];
 	}, [vehicles]);
 
@@ -86,7 +95,11 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 			.filter((v) => {
 				if (showArchived && v.archivedAt === null) return false;
 				if (!showArchived && v.archivedAt !== null) return false;
-				if (type?.trim().length && type !== "ALL" && v.type !== type) return false;
+				if (type?.trim().length && type !== "ALL") {
+					const isVehicleTrain = isTrainNumber(v.number);
+					if (type === "TRAIN" && !isVehicleTrain) return false;
+					if (type !== "TRAIN" && (isVehicleTrain || v.type !== type)) return false;
+				}
 				if (operatorId !== "" && operatorId !== "ALL" && +operatorId !== v.operatorId) return false;
 				if (debouncedFilter === "") return true;
 				return pattern instanceof RegExp
