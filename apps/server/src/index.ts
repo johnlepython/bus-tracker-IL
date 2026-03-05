@@ -34,6 +34,7 @@ const redis = createClient({
 await redis.connect();
 
 await redis.subscribe("journeys", async (message) => {
+	console.log("► Redis message received (length: %d)", String(message).length);
 	let didWarn = false;
 	let vehicleJourneys: VehicleJourney[];
 
