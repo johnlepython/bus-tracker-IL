@@ -108,7 +108,7 @@ export async function handleVehicleBatch(vehicleJourneys: VehicleJourney[]) {
 		}
 
 		registerActivities(registerableActivities);
-		console.log(`► Processed ${networkRef}: Stored ${storedInNetwork} journeys, ${registerableActivities.size} with vehicle registrations`);
+		console.log(`► Processed ${networkRef}: Stored ${storedInNetwork} journeys, ${registerableActivities.length} with vehicle registrations`);
 	}
 
 	console.log(`► Batch complete: Stored ${totalStored} total journeys across all networks`);
