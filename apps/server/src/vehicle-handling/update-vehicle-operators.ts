@@ -1,32 +1,28 @@
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 import { database } from "../core/database/database.js";
-import { vehiclesTable } from "../core/database/schema.js";
 
 /**
- * Update operator IDs for vehicles in batch
+ * Update operator IDs for vehicles in batch using raw SQL to maintain integer types
  * @param updates Array of [vehicleId, operatorId] tuples
  */
 export async function updateVehicleOperators(updates: [number, number][]) {
 	if (updates.length === 0) return;
 
-	// Build a CASE statement with proper type casting
-	// Convert to raw SQL to avoid parameterization issues with integer type
+	// Build CASE statement with integer values (not parameterized to avoid type coercion)
 	const caseConditions = updates
 		.map(([vehicleId, operatorId]) => `WHEN ${vehicleId} THEN ${operatorId}`)
 		.join(' ');
 	
-	const query = sql`CASE id ${sql.raw(caseConditions)} END`;
+	// Build IN clause with actual integer values
+	const vehicleIds = updates.map(([vehicleId]) => vehicleId).join(', ');
 
-	await database
-		.update(vehiclesTable)
-		.set({
-			operatorId: query,
-		})
-		.where(
-			sql`id IN (${sql.join(
-				updates.map(([vehicleId]) => sql`${vehicleId}`),
-				sql`,`,
-			)})`,
-		);
+	// Execute raw SQL to preserve integer types throughout
+	await database.execute(
+		sql.raw(`
+			UPDATE vehicles 
+			SET operator_id = CASE id ${caseConditions} END 
+			WHERE id IN (${vehicleIds})
+		`)
+	);
 }
