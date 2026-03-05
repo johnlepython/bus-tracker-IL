@@ -30,16 +30,16 @@ export function VehicleCharacteristics({ vehicle }: Readonly<VehicleCharacterist
 
 	return (
 		<div className="border border-border px-3 py-2 rounded-md shadow-lg lg:w-80 w-full relative">
-			<h2 className="hidden">Informations du véhicule</h2>
+			<h2 className="hidden">Vehicle Information</h2>
 			<div className="flex justify-between gap-2">
 				<div>
 					<div className="font-bold text-lg">
-						{vehicleIcon} Véhicule n°{vehicle.number}
+						{vehicleIcon} Vehicle #{vehicle.number}
 					</div>
 					{vehicle.designation !== null && <div>{vehicle.designation}</div>}
 					{vehicle.operator !== null && (
 						<div className="mt-0.5 text-xs text-muted-foreground">
-							Opéré par <span className="font-bold">{vehicle.operator.name}</span>
+							Operated by <span className="font-bold">{vehicle.operator.name}</span>
 						</div>
 					)}
 					{vehicle.archivedAt !== null && (
@@ -53,15 +53,15 @@ export function VehicleCharacteristics({ vehicle }: Readonly<VehicleCharacterist
 								.otherwise(() => (
 									<ArchiveIcon className="align-text-bottom inline size-4" />
 								))}{" "}
-							Ce véhicule{" "}
+							This vehicle{" "}
 							{match(vehicle.archivedFor)
-								.with("FAILURE", () => "a subi une casse irrémédiable")
-								.with("FIRE", () => "a été victime d'un incendie")
-								.with("RETIRED", () => "a été réformé")
-								.with("SOLD", () => "a été vendu")
-								.with("TRANSFER", () => "a été transféré")
-								.otherwise(() => "a été archivé")}{" "}
-							le <span className="font-bold">{dayjs(vehicle.archivedAt).format("L")}</span> à{" "}
+								.with("FAILURE", () => "suffered an irreparable breakdown")
+								.with("FIRE", () => "was victim of a fire")
+								.with("RETIRED", () => "was retired")
+								.with("SOLD", () => "was sold")
+								.with("TRANSFER", () => "was transferred")
+								.otherwise(() => "was archived")}{" "}
+							on <span className="font-bold">{dayjs(vehicle.archivedAt).format("L")}</span> at{" "}
 							<span className="font-bold">{dayjs(vehicle.archivedAt).format("LT")}</span>.
 						</div>
 					)}
@@ -70,7 +70,7 @@ export function VehicleCharacteristics({ vehicle }: Readonly<VehicleCharacterist
 					{vehicle.tcId ? (
 						<Button asChild className="" size="icon">
 							<Link target="_blank" to={getTcInfosLink(vehicle.tcId)}>
-								<img className="rounded-sm" src={tcInfosIcon} alt="Voir sur TC-Infos" />
+								<img className="rounded-sm" src={tcInfosIcon} alt="View on TC-Infos" />
 							</Link>
 						</Button>
 					) : null}

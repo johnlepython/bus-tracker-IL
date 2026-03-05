@@ -34,7 +34,7 @@ export default function EmbeddableMapPage() {
 
 	return (
 		<>
-			<title>{`Carte du réseau ${data.name}`}</title>
+			<title>{`${data.name} Network Map`}</title>
 			<style>{` body { background-color: var(--color-branding); } `}</style>
 			<MapComponent
 				containerProps={{ className: "h-dvh relative" }}

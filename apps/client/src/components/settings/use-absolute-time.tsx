@@ -11,7 +11,7 @@ export function DisplayAbsoluteTimeSetting() {
 	return (
 		<div className="flex items-center space-x-2">
 			<Switch id={id} checked={displayAbsoluteTime} onCheckedChange={setDisplayAbsoluteTime} />
-			<Label htmlFor={id}>Afficher l'heure absolue à la place de l'heure relative</Label>
+			<Label htmlFor={id}>Display absolute time instead of relative time</Label>
 		</div>
 	);
 }

@@ -24,14 +24,14 @@ export function NetworkDetails() {
 
 	return (
 		<>
-			<title>{`${network.name} – Données – Bus Tracker`}</title>
+			<title>{`${network.name} – Data – Bus Tracker`}</title>
 			<main className="p-3 pb-0 max-w-(--breakpoint-xl) w-full mx-auto">
 				<NetworkHeader network={network} />
 				<Breadcrumb>
 					<BreadcrumbList>
 						<BreadcrumbItem>
 							<BreadcrumbLink asChild>
-								<Link to="/data">Données</Link>
+							<Link to="/data">Data</Link>
 							</BreadcrumbLink>
 						</BreadcrumbItem>
 						<BreadcrumbSeparator />

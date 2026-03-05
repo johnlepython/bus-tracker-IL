@@ -86,23 +86,23 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 						<p>
 							{vehicle.archivedAt ? (
 								<>
-									Archivé le{" "}
+									Archived on{" "}
 									{dayjs().diff(vehicle.archivedAt, "years") >= 1 ? (
 										<span className="font-bold tabular-nums">{dayjs(vehicle.archivedAt).format("DD/MM/YYYY")}</span>
 									) : (
 										<>
-											<span className="font-bold tabular-nums">{dayjs(vehicle.archivedAt).format("DD/MM")}</span> à{" "}
+											<span className="font-bold tabular-nums">{dayjs(vehicle.archivedAt).format("DD/MM")}</span> at{" "}
 											<span className="font-bold tabular-nums">{dayjs(vehicle.archivedAt).format("HH:mm")}</span>
 										</>
 									)}
 								</>
 							) : (
 								<>
-									Hors-ligne
+									Offline
 									{vehicle.activity.since !== null && (
 										<>
 											{" "}
-											depuis le{" "}
+											since{" "}
 											{dayjs().diff(vehicle.activity.since, "years") >= 1 ? (
 												<span className="font-bold tabular-nums">
 													{dayjs(vehicle.activity.since).format("DD/MM/YYYY")}

@@ -11,7 +11,7 @@ export function GeolocateOnStartSetting() {
 	return (
 		<div className="flex items-center space-x-2">
 			<Switch id={id} checked={geolocateOnStart} onCheckedChange={setGeolocateOnStart} />
-			<Label htmlFor={id}>Me géolocaliser à l'ouverture</Label>
+			<Label htmlFor={id}>Geolocate me on start</Label>
 		</div>
 	);
 }

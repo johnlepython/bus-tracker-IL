@@ -75,7 +75,7 @@ export function OnlineVehiclesVehicleCard({
 					{vehicle.designation && <p className="font-bold text-center">{vehicle.designation}</p>}
 					{vehicle.activity?.status === "online" ? (
 						<p className="text-center">
-							En ligne depuis{" "}
+							Online since{" "}
 							<span className="font-bold tabular-nums">{dayjs(vehicle.activity.since).format("HH:mm")}</span>
 						</p>
 					) : null}

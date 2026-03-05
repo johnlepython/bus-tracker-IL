@@ -115,10 +115,10 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 
 	const activeVehiclesLabel = useMemo(() => {
 		if (showArchived)
-			return `${filteredAndSortedVehicles.length} véhicule${filteredAndSortedVehicles.length > 1 ? "s" : ""} archivé${filteredAndSortedVehicles.length > 1 ? "s" : ""}`;
-		if (filteredAndSortedVehicles.length === 0) return "Aucun véhicule n'existe avec ces critères de recherche";
-		if (onlineVehicles.length === 0) return `Aucun véhicule sur ${filteredAndSortedVehicles.length} en circulation`;
-		return `${onlineVehicles.length}/${filteredAndSortedVehicles.length} véhicule${filteredAndSortedVehicles.length > 1 ? "s" : ""} en circulation`;
+			return `${filteredAndSortedVehicles.length} vehicle${filteredAndSortedVehicles.length > 1 ? "s" : ""} archived`;
+		if (filteredAndSortedVehicles.length === 0) return "No vehicle exists with these search criteria";
+		if (onlineVehicles.length === 0) return `No vehicle out of ${filteredAndSortedVehicles.length} in circulation`;
+		return `${onlineVehicles.length}/${filteredAndSortedVehicles.length} vehicle${filteredAndSortedVehicles.length > 1 ? "s" : ""} in circulation`;
 	}, [filteredAndSortedVehicles, onlineVehicles, showArchived]);
 
 	return (
@@ -176,7 +176,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 									)}
 									<Input
 										className="h-10 w-1/2"
-										placeholder="numéro ou désignation"
+									placeholder="number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}
 									/>
@@ -225,7 +225,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 					<VehiclesTable data={filteredAndSortedVehicles} searchParams={searchParams} />
 				</>
 			) : (
-				<p className="mt-5 text-center text-muted-foreground">Aucun véhicule n'est disponible pour ce réseau.</p>
+				<p className="mt-5 text-center text-muted-foreground">No vehicle is available for this network.</p>
 			)}
 		</section>
 	);

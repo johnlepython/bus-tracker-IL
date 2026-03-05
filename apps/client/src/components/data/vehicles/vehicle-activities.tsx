@@ -27,7 +27,7 @@ export function VehicleActivities({ vehicleId }: VehicleActivitiesProps) {
 	const { data: activities } = useSuspenseQuery(GetVehicleActivitiesQuery(vehicle.id, month));
 	return (activities?.timeline.length ?? 0) > 0 ? (
 		<div className="flex-1">
-			<h2 className="hidden">Activités du véhicule</h2>
+			<h2 className="hidden">Vehicle Activities</h2>
 			<section>
 				<div className="bg-branding text-branding-foreground grid grid-cols-[3rem_1fr_3rem] px-3 py-2 rounded-md">
 					{currentMonthIndex > 0 ? (
@@ -48,7 +48,7 @@ export function VehicleActivities({ vehicleId }: VehicleActivitiesProps) {
 						<div />
 					)}
 					<p className="font-bold my-auto text-2xl text-center">
-						<span className="hidden lg:inline">activité de </span>
+					<span className="hidden lg:inline">activity for </span>
 						{dayjs(month).format("MMMM YYYY")}
 					</p>
 					{currentMonthIndex < vehicle.activeMonths.length - 1 ? (
@@ -94,7 +94,7 @@ export function VehicleActivities({ vehicleId }: VehicleActivitiesProps) {
 		</div>
 	) : (
 		<p className="mt-3 text-center text-muted-foreground text-xl">
-			Ce véhicule n&apos;a pas encore été observé en service commercial.
+			This vehicle has not yet been observed in commercial service.
 		</p>
 	);
 }

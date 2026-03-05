@@ -29,33 +29,33 @@ export function EditorTokenInput() {
 			await queryClient.fetchQuery(GetEditorSelf(token));
 			setEditorToken(token);
 		} catch {
-			enqueueSnackbar("Aucun contributeur n'existe avec ce jeton.", { variant: "error" });
+			enqueueSnackbar("No contributor exists with this token.", { variant: "error" });
 		}
 	};
 
 	return (
 		<div>
-			<h2 className="font-bold mb-2">Espace contribution</h2>
+			<h2 className="font-bold mb-2">Contribution Area</h2>
 			{editor ? (
 				<div className="flex justify-between">
 					<p>
 						<User className="align-text-bottom inline size-5" /> {editor.username}
 						<br />
 						<span className="text-muted-foreground text-sm">
-							Contributeur depuis le {dayjs(editor.createdAt).format("L")}
+							Contributor since {dayjs(editor.createdAt).format("L")}
 						</span>
 					</p>
 					<div className="space-x-2">
 						<Button
 							onClick={() => {
 								navigator.clipboard.writeText(editorToken!);
-								enqueueSnackbar("Jeton d'authentification copié dans le presse-papier !", {
+								enqueueSnackbar("Authentication token copied to clipboard!", {
 									variant: "info",
 								});
 							}}
 							type="button"
 							size="icon"
-							title="Copier mon jeton"
+							title="Copy my token"
 						>
 							<Copy />
 						</Button>
@@ -64,7 +64,7 @@ export function EditorTokenInput() {
 							type="button"
 							variant="destructive"
 							size="icon"
-							title="Se déconnecter"
+							title="Sign out"
 						>
 							<LogOut />
 						</Button>
@@ -73,11 +73,11 @@ export function EditorTokenInput() {
 			) : (
 				<form onSubmit={onSubmit}>
 					<Label htmlFor={id}>
-						<KeySquareIcon className="align-text-bottom inline size-4" /> Jeton d'authentification éditeur
+						<KeySquareIcon className="align-text-bottom inline size-4" /> Editor authentication token
 					</Label>
 					<div className="flex gap-2">
 						<Input id={id} name="token" defaultValue={editorToken ?? ""} required />
-						<Button disabled={isLoading} type="submit" size="icon" title="Se connecter">
+						<Button disabled={isLoading} type="submit" size="icon" title="Sign in">
 							<LogIn />
 						</Button>
 					</div>

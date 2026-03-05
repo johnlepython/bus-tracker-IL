@@ -13,9 +13,9 @@ export function BypassMinZoomSetting() {
 		<div className="flex items-center space-x-2">
 			<Switch id={id} checked={bypassMinZoom} onCheckedChange={setBypassMinZoom} />
 			<Label htmlFor={id}>
-				Autoriser le dézoom intégral{" "}
+				Allow full dezoom{" "}
 				<span className="text-xs">
-					– <AlertTriangleIcon className="inline" height={16} width={16} /> option énergivore
+					– <AlertTriangleIcon className="inline" height={16} width={16} /> power-hungry option
 				</span>
 			</Label>
 		</div>

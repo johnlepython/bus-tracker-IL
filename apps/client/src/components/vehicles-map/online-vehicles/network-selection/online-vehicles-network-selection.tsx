@@ -37,7 +37,7 @@ export function OnlineVehiclesNetworkSelection({
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetTrigger asChild>
 				<a
-					aria-label="Véhicules en ligne"
+					aria-label="Online Vehicles"
 					className="leaflet-bar-part leaflet-bar-part-single"
 					// biome-ignore lint/a11y/useValidAnchor: required by Leaflet
 					href="#"
@@ -51,7 +51,7 @@ export function OnlineVehiclesNetworkSelection({
 				container={container}
 			>
 				<SheetHeader className="mb-1">
-					<SheetTitle className="text-start">Véhicules en ligne</SheetTitle>
+					<SheetTitle className="text-start">Online Vehicles</SheetTitle>
 				</SheetHeader>
 				<div className="h-[96%] overflow-y-auto">
 					{favoriteNetworkIds.length > 0 ? (

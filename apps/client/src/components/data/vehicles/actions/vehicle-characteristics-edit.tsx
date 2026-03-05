@@ -41,7 +41,7 @@ const lineTypeLabels: Record<VehicleJourneyLineType, string> = {
 	COACH: "Coach",
 	FERRY: "Ferry",
 	RAIL: "Train",
-	SUBWAY: "Métro",
+	SUBWAY: "Metro",
 	TRAMWAY: "Tramway",
 	FUNICULAR: "Funiculaire",
 	UNKNOWN: "Autre",
@@ -81,15 +81,15 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 
 		try {
 			await updateVehicle({ token: editorToken, json });
-			snackbar.enqueueSnackbar("Informations du véhicule enregistrées !", {
+			snackbar.enqueueSnackbar("Vehicle information saved!", {
 				variant: "success",
 			});
 		} catch {
 			snackbar.enqueueSnackbar(
 				<>
-					Une erreur est survenue lors de l'enregistrement des informations.
+					An error occurred while saving information.
 					<br />
-					Vérifiez la validité du jeton et vos droits d'édition.
+					Check the token validity and your editing rights.
 				</>,
 				{
 					variant: "error",
@@ -107,19 +107,19 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 			<DialogContent aria-describedby={undefined}>
 				<DialogHeader>
 					<DialogTitle>
-						Édition du véhicule <pre className="inline">{vehicle.ref}</pre>
+						Editing vehicle <pre className="inline">{vehicle.ref}</pre>
 					</DialogTitle>
 					<DialogDescription className="text-start text-xs">
-						<AlertTriangleIcon className="align-text-bottom inline size-4" /> Merci de prendre connaissance{" "}
+						<AlertTriangleIcon className="align-text-bottom inline size-4" /> Please take note{" "}
 						<a
 							className="font-bold hover:underline"
 							href="https://discord.com/channels/1354896116490965316/1407062689531826349/1407068670106009732"
 							target="_blank"
 							rel="noopener"
 						>
-							des règles de contribution
+							of the contribution rules
 						</a>{" "}
-						avant toute action.
+						before any action.
 					</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
@@ -129,7 +129,7 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 							name="number"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Numéro du véhicule</FormLabel>
+									<FormLabel>Vehicle number</FormLabel>
 									<FormControl>
 										<Input {...field} value={field.value ?? ""} />
 									</FormControl>
@@ -142,7 +142,7 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 							name="designation"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Dénomination du véhicule</FormLabel>
+									<FormLabel>Vehicle designation</FormLabel>
 									<FormControl>
 										<Input
 											{...field}
@@ -152,7 +152,7 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 										/>
 									</FormControl>
 									<FormDescription className="text-xs">
-										Merci d'être complet dans la dénomination du véhicule.
+										Please be complete in the vehicle designation.
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -163,7 +163,7 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 							name="tcId"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Identifiant TC-Infos</FormLabel>
+									<FormLabel>TC-Infos Identifier</FormLabel>
 									<FormControl>
 										<Input
 											{...field}
@@ -172,7 +172,7 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 										/>
 									</FormControl>
 									<FormDescription className="text-xs">
-										Exemple : https://tc-infos.fr/vehicule/<span className="font-bold">7839</span>.
+										Example: https://tc-infos.fr/vehicule/<span className="font-bold">7839</span>.
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -183,7 +183,7 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 							name="type"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Type de véhicule</FormLabel>
+									<FormLabel>Vehicle type</FormLabel>
 									<Select onValueChange={field.onChange} defaultValue={field.value}>
 										<FormControl>
 											<SelectTrigger>
@@ -205,11 +205,11 @@ export function VehicleCharacteristicsEdit({ open, onOpenChange, vehicle }: Read
 						<DialogFooter className="gap-2">
 							<DialogClose asChild>
 								<Button disabled={updatingVehicle} type="button">
-									Annuler
+									Cancel
 								</Button>
 							</DialogClose>
 							<Button disabled={updatingVehicle} type="submit" variant="branding-default">
-								Sauvegarder
+								Save
 							</Button>
 						</DialogFooter>
 					</form>
