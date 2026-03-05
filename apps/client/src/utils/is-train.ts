@@ -1,10 +1,13 @@
 /**
  * Detect if a vehicle number represents a train
- * Trains have 3-4 digit numbers
+ * Buses have 7, 8, or 9 digits in their vehicle numbers
+ * Anything else (3-4-5-6 digits, 10+, or non-numeric) is a train
  */
 export function isTrainNumber(vehicleNumber: string | undefined | null): boolean {
 	if (!vehicleNumber) return false;
 	const num = vehicleNumber.trim();
 	const digits = num.replace(/\D/g, "");
-	return /^[0-9]+$/.test(digits) && digits.length >= 3 && digits.length <= 4;
+	const digitCount = digits.length;
+	// Buses have 7, 8, or 9 digits; everything else is a train
+	return digitCount < 7 || digitCount > 9;
 }
