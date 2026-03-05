@@ -171,7 +171,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 
 				return numberSort(a, b);
 			});
-	}, [debouncedFilter, operatorId, showArchived, searchParams, type, vehicles, network]);
+	}, [debouncedFilter, operatorId, showArchived, searchParams, type, sort, vehicles, network]);
 
 	const onlineVehicles = useMemo(
 		() => filteredAndSortedVehicles.filter(({ activity }) => typeof activity.lineId !== "undefined"),
