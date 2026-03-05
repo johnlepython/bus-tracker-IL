@@ -76,9 +76,11 @@ subscriber.on("message", (message, channel) => {
 	})();
 });
 await subscriber.connect();
-// Redis v5 uses event listeners - no callback parameter needed
-// @ts-expect-error - VPS has different Redis types that expect callback, but event listener mode works correctly
-await subscriber.subscribe("journeys");
+// Provide callback for TypeScript, but actual handling is via 'message' event
+await subscriber.subscribe("journeys", (message, channel) => {
+	// This callback might be required for proper subscriber mode initialization
+	// Actual handling is done via the 'message' event listener above
+});
 
 console.log("► Listening on port %d.\n", port);
 serve({ fetch: hono.fetch, port });
