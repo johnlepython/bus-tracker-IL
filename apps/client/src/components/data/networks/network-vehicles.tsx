@@ -57,7 +57,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 			if (isTrainNumber(number)) {
 				networkVehicleTypes.add("TRAIN");
 			} else {
-				networkVehicleTypes.add(type);
+				networkVehicleTypes.add(type === "UNKNOWN" ? "BUS" : type);
 			}
 		});
 		return [
@@ -111,8 +111,9 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 				if (!showArchived && v.archivedAt !== null) return false;
 				if (type?.trim().length && type !== "ALL") {
 					const isVehicleTrain = isTrainNumber(v.number);
+					const effectiveType = !isVehicleTrain && v.type === "UNKNOWN" ? "BUS" : v.type;
 					if (type === "TRAIN" && !isVehicleTrain) return false;
-					if (type !== "TRAIN" && (isVehicleTrain || v.type !== type)) return false;
+					if (type !== "TRAIN" && (isVehicleTrain || effectiveType !== type)) return false;
 				}
 				if (operatorId !== "" && operatorId !== "ALL" && +operatorId !== v.operatorId) return false;
 				if (lineNetworkId !== "" && lineNetworkId !== "ALL") {
@@ -228,22 +229,24 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 							</Label>
 							<div className="flex gap-1">
 								{availableNetworkTypeFilters.length > 2 && (
-									<Select value={type} onValueChange={(newType) => updateSearchParam("type", newType)}>
-										<SelectTrigger aria-label="Type" className="h-10 min-w-[5rem]">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{availableNetworkTypeFilters.map((type) => (
-												<SelectItem key={type} value={type}>
-													{filterableVehicleTypes[type as keyof typeof filterableVehicleTypes]}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									<div className="w-24 shrink-0">
+										<Select value={type} onValueChange={(newType) => updateSearchParam("type", newType)}>
+											<SelectTrigger aria-label="Type" className="h-10 w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{availableNetworkTypeFilters.map((type) => (
+													<SelectItem key={type} value={type}>
+														{filterableVehicleTypes[type as keyof typeof filterableVehicleTypes]}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
 								)}
-								<div className="flex flex-1 gap-1">
+								<div className="flex flex-1 min-w-0 gap-1">
 									{network.operators.length > 0 && (
-										<div className="w-full max-w-[33.333%] min-w-[6rem]">
+										<div className="w-40 shrink-0">
 											<Select
 												value={operatorId}
 												onValueChange={(newOperatorId) => updateSearchParam("operatorId", newOperatorId)}
@@ -266,28 +269,35 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 											</Select>
 										</div>
 									)}
-									{availableLineNetworks.length > 0 && (
+									<div className="w-36 shrink-0">
 										<Select
 											value={lineNetworkId}
 											onValueChange={(newLineNetworkId) => updateSearchParam("lineNetworkId", newLineNetworkId)}
+											disabled={availableLineNetworks.length === 0}
 										>
-											<SelectTrigger aria-label="Line Network" className="h-10 min-w-[8rem]">
+											<SelectTrigger aria-label="Line Network" className="h-10 w-full">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="ALL">
 													<span className="text-muted-foreground">Network</span>
 												</SelectItem>
-												{availableLineNetworks.map((lineNetwork) => (
-													<SelectItem key={lineNetwork.id} value={lineNetwork.id.toString()}>
-														{lineNetwork.name}
+												{availableLineNetworks.length === 0 ? (
+													<SelectItem value="NO_NETWORK_DATA" disabled>
+														No network data yet
 													</SelectItem>
-												))}
+												) : (
+													availableLineNetworks.map((lineNetwork) => (
+														<SelectItem key={lineNetwork.id} value={lineNetwork.id.toString()}>
+															{lineNetwork.name}
+														</SelectItem>
+													))
+												)}
 											</SelectContent>
 										</Select>
-									)}
+									</div>
 									<Input
-										className="h-10 flex-1"
+										className="h-10 min-w-0 flex-1"
 										placeholder="vehicle number, line number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}

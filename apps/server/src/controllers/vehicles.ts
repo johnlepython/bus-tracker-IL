@@ -93,7 +93,10 @@ hono.get("/vehicles", createQueryValidator(searchVehiclesSchema), async (c) => {
 	);
 
 	const vehicleListRaw = await database
-		.select()
+		.select({
+			vehicle: vehiclesTable,
+			operator: operatorsTable,
+		})
 		.from(vehiclesTable)
 		.leftJoin(operatorsTable, eq(operatorsTable.id, vehiclesTable.operatorId))
 		.where(vehiclesListWhereClause)
