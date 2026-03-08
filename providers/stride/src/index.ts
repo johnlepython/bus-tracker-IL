@@ -40,8 +40,7 @@ const missedLineRefs = new Set<string>();
  * Uses current date to ensure cache is up-to-date
  */
 async function buildRouteCache(): Promise<Map<string, { commercialNumber: string; routeLongName: string; direction: string }>> {
-  const today = Temporal.Now.plainDateISO().toString(); // Dynamic date (e.g., "2026-03-05")
-  console.log("%s ► Building route cache from gtfs_routes for date: %s", Temporal.Now.instant(), today);
+  console.log("%s ► Building route cache from gtfs_routes", Temporal.Now.instant());
   const routeCache = new Map();
   
   try {
@@ -56,7 +55,8 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
     
     for (let page = 0; page < MAX_PAGES; page++) {
       const offset = page * PAGE_SIZE;
-      const url = `${STRIDE_API_URL}/gtfs_routes/list?date=${today}&limit=${PAGE_SIZE}&offset=${offset}`;
+      // Don't filter by date - get all available routes to maximize coverage
+      const url = `${STRIDE_API_URL}/gtfs_routes/list?limit=${PAGE_SIZE}&offset=${offset}`;
       
       const response = await fetch(url);
       const routes = await response.json();
