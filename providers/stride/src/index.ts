@@ -63,10 +63,13 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
     let totalRoutesFetched = 0;
     let pagesProcessed = 0;
     
+    // Get current date in YYYY-MM-DD format for filtering
+    const today = Temporal.Now.plainDateISO().toString();
+    
     for (let page = 0; page < MAX_PAGES; page++) {
       const offset = page * PAGE_SIZE;
-      // Don't filter by date - get all available routes to maximize coverage
-      const url = `${STRIDE_API_URL}/gtfs_routes/list?limit=${PAGE_SIZE}&offset=${offset}`;
+      // Filter by current/future dates to get active routes with destinations
+      const url = `${STRIDE_API_URL}/gtfs_routes/list?limit=${PAGE_SIZE}&offset=${offset}&date__gte=${today}`;
       
       const response = await fetch(url);
       const routes = await response.json();
