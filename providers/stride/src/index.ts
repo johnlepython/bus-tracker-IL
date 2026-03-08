@@ -386,7 +386,7 @@ async function run() {
         line: loc.siri_route__line_ref
           ? {
               ref: `${NETWORK_REF}:Line:${loc.siri_route__line_ref}`,
-              number: routeData?.commercialNumber ?? String(loc.siri_route__line_ref),
+              number: routeData?.commercialNumber ?? `Ligne ${loc.siri_route__line_ref}`,
               type: "BUS",
             }
           : undefined,
