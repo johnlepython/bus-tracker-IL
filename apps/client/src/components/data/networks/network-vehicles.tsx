@@ -102,9 +102,16 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 				}
 				if (operatorId !== "" && operatorId !== "ALL" && +operatorId !== v.operatorId) return false;
 				if (debouncedFilter === "") return true;
+
+				const lineNumber =
+					typeof v.activity.lineId === "number"
+						? (network?.lines.find((line) => line.id === v.activity.lineId)?.number ?? "")
+						: "";
 				return pattern instanceof RegExp
-					? pattern.test(v.number.toString()) || pattern.test(v.designation ?? "")
-					: v.number.toString().includes(pattern);
+					? pattern.test(v.number.toString()) || pattern.test(v.designation ?? "") || pattern.test(lineNumber)
+					: v.number.toString().includes(pattern) ||
+						(v.designation ?? "").toLowerCase().includes(pattern.toLowerCase()) ||
+						lineNumber.toLowerCase().includes(pattern.toLowerCase());
 			})
 			.sort((a, b) => {
 				if (sort === "activity") {
@@ -243,7 +250,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 									)}
 									<Input
 										className="h-10 flex-1"
-										placeholder="number or designation"
+										placeholder="vehicle number, line number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}
 									/>
