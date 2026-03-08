@@ -102,9 +102,16 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 				}
 				if (operatorId !== "" && operatorId !== "ALL" && +operatorId !== v.operatorId) return false;
 				if (debouncedFilter === "") return true;
+
+				const lineNumber =
+					typeof v.activity.lineId === "number"
+						? (network?.lines.find((line) => line.id === v.activity.lineId)?.number ?? "")
+						: "";
 				return pattern instanceof RegExp
-					? pattern.test(v.number.toString()) || pattern.test(v.designation ?? "")
-					: v.number.toString().includes(pattern);
+					? pattern.test(v.number.toString()) || pattern.test(v.designation ?? "") || pattern.test(lineNumber)
+					: v.number.toString().includes(pattern) ||
+						(v.designation ?? "").toLowerCase().includes(pattern.toLowerCase()) ||
+						lineNumber.toLowerCase().includes(pattern.toLowerCase());
 			})
 			.sort((a, b) => {
 				if (sort === "activity") {
@@ -218,30 +225,32 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 								)}
 								<div className="flex flex-1 gap-1">
 									{network.operators.length > 0 && (
-										<Select
-											value={operatorId}
-											onValueChange={(newOperatorId) => updateSearchParam("operatorId", newOperatorId)}
-										>
-											<SelectTrigger aria-label="Operator" className="h-10 min-w-[6rem]">
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="ALL">
-													<span className="text-muted-foreground">Operator</span>
-												</SelectItem>
-												{network.operators
-													.toSorted((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
-													.map((operator) => (
-														<SelectItem key={operator.id} value={operator.id.toString()}>
-															{operator.name}
-														</SelectItem>
-													))}
-											</SelectContent>
-										</Select>
+										<div className="w-full max-w-[33.333%] min-w-[6rem]">
+											<Select
+												value={operatorId}
+												onValueChange={(newOperatorId) => updateSearchParam("operatorId", newOperatorId)}
+											>
+												<SelectTrigger aria-label="Operator" className="h-10 w-full">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="ALL">
+														<span className="text-muted-foreground">Operator</span>
+													</SelectItem>
+													{network.operators
+														.toSorted((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+														.map((operator) => (
+															<SelectItem key={operator.id} value={operator.id.toString()}>
+																{operator.name}
+															</SelectItem>
+														))}
+												</SelectContent>
+											</Select>
+										</div>
 									)}
 									<Input
 										className="h-10 flex-1"
-										placeholder="number or designation"
+										placeholder="vehicle number, line number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}
 									/>
