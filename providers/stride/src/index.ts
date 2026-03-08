@@ -2,7 +2,16 @@ import DraftLog from "draftlog";
 import { createClient } from "redis";
 import { Temporal } from "temporal-polyfill";
 import type { VehicleJourney } from "@bus-tracker/contracts";
-import routeFallbackMap from "./route-fallback-map.json";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const routeFallbackMap: Record<string, string> = JSON.parse(
+  readFileSync(join(__dirname, "route-fallback-map.json"), "utf-8")
+);
+console.log("Loaded %d route fallback mappings", Object.keys(routeFallbackMap).length);
 
 DraftLog(console, !process.stdout.isTTY)?.addLineListener(process.stdin);
 
@@ -388,7 +397,7 @@ async function run() {
           ? {
               ref: `${NETWORK_REF}:Line:${loc.siri_route__line_ref}`,
               number: routeData?.commercialNumber ?? 
-                     (routeFallbackMap as Record<string, string>)[String(loc.siri_route__line_ref)] ?? 
+                     routeFallbackMap[String(loc.siri_route__line_ref)] ?? 
                      `Ligne ${loc.siri_route__line_ref}`,
               type: "BUS",
             }
