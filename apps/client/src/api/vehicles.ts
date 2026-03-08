@@ -71,6 +71,9 @@ export const GetVehiclesQuery = (networkId?: number) =>
 			if (typeof networkId === "number") {
 				params.append("networkId", networkId.toString());
 			}
+			// Avoid backend default pagination (10k) to keep the vehicle list complete.
+			params.append("limit", "100000");
+			params.append("page", "0");
 			return client.get(`vehicles?${params}`).then((response) => response.json<Vehicle[]>());
 		},
 		select: (data) => data.sort((a, b) => +a.number - +b.number),

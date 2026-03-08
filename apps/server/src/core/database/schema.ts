@@ -72,6 +72,15 @@ export const operatorsTable = pgTable("operator", {
 
 export type OperatorEntity = InferSelectModel<typeof operatorsTable>;
 
+export const lineNetworksTable = pgTable("line_network", {
+	id: serial("id").primaryKey(),
+	ref: varchar("ref").notNull().unique(),
+	name: varchar("name").notNull(),
+	subDescription: varchar("sub_description"),
+});
+
+export type LineNetworkEntity = InferSelectModel<typeof lineNetworksTable>;
+
 export const linesTable = pgTable(
 	"line",
 	{
@@ -79,6 +88,7 @@ export const linesTable = pgTable(
 		networkId: integer("network_id")
 			.notNull()
 			.references(() => networksTable.id),
+		lineNetworkId: integer("line_network_id").references(() => lineNetworksTable.id),
 		references: varchar("ref").array(),
 		number: varchar("number").notNull(),
 		girouetteNumber: varchar("girouette_number"),

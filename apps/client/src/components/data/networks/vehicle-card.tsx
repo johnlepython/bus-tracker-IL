@@ -116,6 +116,11 @@ export function VehicleCard({ vehicle }: Readonly<{ vehicle: Vehicle }>) {
 				</div>
 				<div className="flex flex-col justify-center">
 					{vehicle.designation && <p className="font-bold">{vehicle.designation}</p>}
+					{line?.lineNetwork && (
+						<p className="text-xs opacity-75">
+							{line.lineNetwork.name}
+						</p>
+					)}
 					{vehicle.activity?.status === "online" ? (
 						<p>
 							Online since{" "}

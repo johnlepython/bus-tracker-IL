@@ -6,12 +6,14 @@ import { z } from "zod";
 import { database } from "../../core/database/database.js";
 import {
 	editorsTable,
+	lineNetworksTable,
 	linesTable,
 	networksTable,
 	operatorsTable,
 	regionsTable,
 	vehiclesTable,
 	type LineEntity,
+	type LineNetworkEntity,
 	type NetworkEntity,
 	type OperatorEntity,
 	type RegionEntity,
@@ -28,7 +30,7 @@ const networksApp = new Hono();
 export const networkEntityToNetworkDto = (
 	network: NetworkEntity,
 	region?: RegionEntity | null,
-	lines?: LineEntity[],
+	linesData?: Array<{ line: LineEntity; lineNetwork: LineNetworkEntity | null }>,
 	operators?: OperatorEntity[],
 	onlineVehicleCountMap?: Map<number, number>,
 ) => ({
@@ -40,13 +42,20 @@ export const networkEntityToNetworkDto = (
 	...(region
 		? { region: region ? { id: region.id, name: region.name, order: region.sortOrder } : null }
 		: { regionId: network.regionId }),
-	lines: lines?.map((line) => ({
+	lines: linesData?.map(({ line, lineNetwork }) => ({
 		id: line.id,
 		number: line.number,
 		order: line.sortOrder,
 		cartridgeHref: line.cartridgeHref,
 		colors: { foreground: line.textColor, background: line.color },
 		onlineVehicleCount: onlineVehicleCountMap?.get(line.id) ?? 0,
+		lineNetwork: lineNetwork
+			? {
+					id: lineNetwork.id,
+					name: lineNetwork.name,
+					subDescription: lineNetwork.subDescription,
+				}
+			: null,
 	})),
 	operators: operators?.map((operator) => ({
 		id: operator.id,
@@ -91,14 +100,15 @@ networksApp.get(
 			return c.json({ status: 404, code: "NETWORK_NOT_FOUND", message: `No network found with id '${id}'.` }, 404);
 		}
 
-		let lines: LineEntity[] | undefined;
+		let linesData: Array<{ line: LineEntity; lineNetwork: LineNetworkEntity | null }> | undefined;
 		let operators: OperatorEntity[] | undefined;
 		const onlineVehicleCountMap = new Map<LineEntity["id"], number>();
 
 		if (query["include-lines"]) {
-			lines = await database
+			const linesRaw = await database
 				.select()
 				.from(linesTable)
+				.leftJoin(lineNetworksTable, eq(lineNetworksTable.id, linesTable.lineNetworkId))
 				.where(
 					and(
 						eq(linesTable.networkId, item.network.id),
@@ -107,7 +117,8 @@ networksApp.get(
 				)
 				.orderBy(asc(linesTable.sortOrder), asc(linesTable.number), asc(linesTable.id));
 
-			const lineIds = new Set(lines.map(({ id }) => id));
+			linesData = linesRaw.map(({ line, line_network }) => ({ line, lineNetwork: line_network }));
+			const lineIds = new Set(linesData.map(({ line }) => line.id));
 			for (const vehicle of journeyStore.values()) {
 				if (typeof vehicle.lineId === "undefined" || !lineIds.has(vehicle.lineId)) continue;
 				onlineVehicleCountMap.set(vehicle.lineId, (onlineVehicleCountMap.get(vehicle.lineId) ?? 0) + 1);
@@ -122,7 +133,7 @@ networksApp.get(
 				.orderBy(asc(operatorsTable.sortOrder), asc(operatorsTable.name), asc(operatorsTable.id));
 		}
 
-		const network = networkEntityToNetworkDto(item.network, item.region, lines, operators);
+		const network = networkEntityToNetworkDto(item.network, item.region, linesData, operators, onlineVehicleCountMap);
 		return c.json(network, 200);
 	},
 );

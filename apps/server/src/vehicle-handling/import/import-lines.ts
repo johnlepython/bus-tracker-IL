@@ -26,6 +26,34 @@ export async function importLines(
 			),
 		);
 
+	// Update existing lines with new data from providers
+	const linesToUpdate = linesData.filter(({ ref }) =>
+		existingLines.some(({ references }) => references?.includes(ref)),
+	);
+
+	for (const lineData of linesToUpdate) {
+		const existingLine = existingLines.find(({ references }) => references?.includes(lineData.ref));
+		if (!existingLine) continue;
+
+		// Update line number, color, and textColor if provided
+		const updates: Record<string, any> = {};
+		if (lineData.number && lineData.number !== existingLine.number) {
+			updates.number = lineData.number;
+		}
+		if (lineData.color?.length === 6 && lineData.color !== existingLine.color) {
+			updates.color = lineData.color;
+		}
+		if (lineData.textColor?.length === 6 && lineData.textColor !== existingLine.textColor) {
+			updates.textColor = lineData.textColor;
+		}
+
+		if (Object.keys(updates).length > 0) {
+			await database.update(linesTable).set(updates).where(eq(linesTable.id, existingLine.id));
+			// Update the in-memory object to reflect changes
+			Object.assign(existingLine, updates);
+		}
+	}
+
 	const missingLines = linesData.filter(
 		({ ref }) => !existingLines.some(({ references }) => references?.includes(ref)),
 	);

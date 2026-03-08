@@ -3,7 +3,7 @@ import * as z from "zod";
 
 import { createParamValidator, createQueryValidator } from "../api/validator-helpers.js";
 import { database } from "../core/database/database.js";
-import { linesTable, networksTable, operatorsTable } from "../core/database/schema.js";
+import { lineNetworksTable, linesTable, networksTable, operatorsTable } from "../core/database/schema.js";
 import { journeyStore } from "../core/store/journey-store.js";
 
 import { hono } from "../server.js";
@@ -42,17 +42,30 @@ hono.get(
 				.toArray();
 
 			const operatorList = await database.select().from(operatorsTable).where(eq(operatorsTable.networkId, network.id));
-			const lineList = await database.select().from(linesTable).where(eq(linesTable.networkId, network.id));
+			const lineListRaw = await database
+				.select()
+				.from(linesTable)
+				.leftJoin(lineNetworksTable, eq(lineNetworksTable.id, linesTable.lineNetworkId))
+				.where(eq(linesTable.networkId, network.id));
 			return c.json({
 				...network,
 				operators: operatorList.map(({ networkId, ...operator }) => operator),
-				lines: lineList
+				lines: lineListRaw
+					.map(({ line, line_network }) => ({ line, lineNetwork: line_network }))
 					.toSorted((a, b) => {
-						const sortOrderDiff = (a.sortOrder ?? lineList.length) - (b.sortOrder ?? lineList.length);
-						return sortOrderDiff || Number.parseInt(a.number, 10) - Number.parseInt(b.number, 10);
+						const sortOrderDiff = (a.line.sortOrder ?? lineListRaw.length) - (b.line.sortOrder ?? lineListRaw.length);
+						return sortOrderDiff || Number.parseInt(a.line.number, 10) - Number.parseInt(b.line.number, 10);
 					})
-					.map(({ networkId, ...line }) => ({
+					.map(({ line, lineNetwork }) => ({
 						...line,
+						networkId: undefined,
+						lineNetwork: lineNetwork
+							? {
+									id: lineNetwork.id,
+									name: lineNetwork.name,
+									subDescription: lineNetwork.subDescription,
+								}
+							: null,
 						onlineVehicleCount: onlineNetworkVehicles.filter(
 							(journey) => journey.lineId === line.id && typeof journey.vehicle?.id !== "undefined",
 						).length,

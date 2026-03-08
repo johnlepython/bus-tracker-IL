@@ -2,6 +2,16 @@ import DraftLog from "draftlog";
 import { createClient } from "redis";
 import { Temporal } from "temporal-polyfill";
 import type { VehicleJourney } from "@bus-tracker/contracts";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const routeFallbackMap: Record<string, string> = JSON.parse(
+  readFileSync(join(__dirname, "route-fallback-map.json"), "utf-8")
+);
+console.log("Loaded %d route fallback mappings", Object.keys(routeFallbackMap).length);
 
 DraftLog(console, !process.stdout.isTTY)?.addLineListener(process.stdin);
 
@@ -15,6 +25,8 @@ const {
   REDIS_CHANNEL = "journeys",
   POLL_INTERVAL_MS = "60000",
   CACHE_REFRESH_INTERVAL_MS = "43200000", // 12 hours
+  ROUTE_CACHE_PAGE_SIZE = "15000",
+  ROUTE_CACHE_MAX_PAGES = "20",
 } = process.env;
 
 if (NETWORK_REF === undefined) throw new Error("NETWORK_REF must be defined");
@@ -31,32 +43,49 @@ console.log("%s ► Connected! Journeys will be published into '%s'.", Temporal.
 // Cache metrics
 let cacheHits = 0;
 let cacheMisses = 0;
-const missedLineRefs = new Set<number>();
+const missedLineRefs = new Set<string>();
 
 /**
  * Build route cache from gtfs_routes API for destination lookup
  * Uses current date to ensure cache is up-to-date
  */
-async function buildRouteCache(): Promise<Map<number, { commercialNumber: string; routeLongName: string; direction: string }>> {
-  const today = Temporal.Now.plainDateISO().toString(); // Dynamic date (e.g., "2026-03-05")
-  console.log("%s ► Building route cache from gtfs_routes for date: %s", Temporal.Now.instant(), today);
+async function buildRouteCache(): Promise<Map<string, { commercialNumber: string; routeLongName: string; direction: string }>> {
+  console.log("%s ► Building route cache from gtfs_routes", Temporal.Now.instant());
   const routeCache = new Map();
   
   try {
-    const LIMIT = 15000;
-    const MAX_PAGES = 1; // Fetch 1 page = 15k routes (sufficient for lookups)
+    const PAGE_SIZE = Number.parseInt(ROUTE_CACHE_PAGE_SIZE, 10);
+    const MAX_PAGES = Number.parseInt(ROUTE_CACHE_MAX_PAGES, 10);
+    
+    console.log("%s ► Route cache pagination: pageSize=%d, maxPages=%d (up to %d routes)",
+      Temporal.Now.instant(), PAGE_SIZE, MAX_PAGES, PAGE_SIZE * MAX_PAGES);
+    
+    let totalRoutesFetched = 0;
+    let pagesProcessed = 0;
+    
+    // Get current date in YYYY-MM-DD format for filtering
+    const today = Temporal.Now.plainDateISO().toString();
     
     for (let page = 0; page < MAX_PAGES; page++) {
-      const offset = page * LIMIT;
-      const url = `${STRIDE_API_URL}/gtfs_routes/list?date=${today}&limit=${LIMIT}&offset=${offset}`;
+      const offset = page * PAGE_SIZE;
+      // Filter by current/future dates to get active routes with destinations
+      const url = `${STRIDE_API_URL}/gtfs_routes/list?limit=${PAGE_SIZE}&offset=${offset}&date__gte=${today}`;
       
       const response = await fetch(url);
       const routes = await response.json();
       
-      if (!Array.isArray(routes) || routes.length === 0) break;
+      if (!Array.isArray(routes) || routes.length === 0) {
+        console.log("%s ► Pagination stopped at page %d (no more results)", Temporal.Now.instant(), page);
+        break;
+      }
+      
+      pagesProcessed++;
+      totalRoutesFetched += routes.length;
+      console.log("%s ► Page %d: fetched %d routes, cache size now: %d", 
+        Temporal.Now.instant(), page + 1, routes.length, routeCache.size);
       
       for (const route of routes) {
-        const key = route.line_ref;
+        const key = String(route.line_ref);
         // Keep most recent entry per line_ref
         if (!routeCache.has(key) || route.date > routeCache.get(key).date) {
           routeCache.set(key, {
@@ -68,10 +97,15 @@ async function buildRouteCache(): Promise<Map<number, { commercialNumber: string
         }
       }
       
-      if (routes.length < LIMIT) break;
+      if (routes.length < PAGE_SIZE) {
+        console.log("%s ► Pagination stopped at page %d (last page with %d routes)", 
+          Temporal.Now.instant(), pagesProcessed, routes.length);
+        break;
+      }
     }
     
-    console.log("%s ► Route cache built with %d entries", Temporal.Now.instant(), routeCache.size);
+    console.log("%s ► Route cache built with %d unique entries from %d routes across %d pages", 
+      Temporal.Now.instant(), routeCache.size, totalRoutesFetched, pagesProcessed);
   } catch (err) {
     console.error("%s ► Failed to build route cache: %s", Temporal.Now.instant(), String(err));
   }
@@ -98,7 +132,7 @@ function extractDestination(routeLongName: string, direction: string): string | 
 }
 
 // Initialize empty route cache, build in background
-let routeCache = new Map<number, { commercialNumber: string; routeLongName: string; direction: string }>();
+let routeCache = new Map<string, { commercialNumber: string; routeLongName: string; direction: string }>();
 
 /**
  * Log cache metrics periodically
@@ -341,7 +375,7 @@ async function run() {
       const id = `${NETWORK_REF}:${operatorRef}:VehicleTracking:${vehicleRefRaw}`;
       
       // Get route data from cache for commercial number and destination
-      const lineRef = loc.siri_route__line_ref;
+      const lineRef = loc.siri_route__line_ref ? String(loc.siri_route__line_ref) : undefined;
       const routeData = lineRef ? routeCache.get(lineRef) : undefined;
       
       // Track cache metrics
@@ -365,7 +399,9 @@ async function run() {
         line: loc.siri_route__line_ref
           ? {
               ref: `${NETWORK_REF}:Line:${loc.siri_route__line_ref}`,
-              number: routeData?.commercialNumber ?? String(loc.siri_route__line_ref),
+              number: routeData?.commercialNumber ?? 
+                     routeFallbackMap[String(loc.siri_route__line_ref)] ?? 
+                     `Ligne ${loc.siri_route__line_ref}`,
               type: "BUS",
             }
           : undefined,

@@ -57,7 +57,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 			if (isTrainNumber(number)) {
 				networkVehicleTypes.add("TRAIN");
 			} else {
-				networkVehicleTypes.add(type);
+				networkVehicleTypes.add(type === "UNKNOWN" ? "BUS" : type);
 			}
 		});
 		return [
@@ -65,6 +65,19 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 			...Object.keys(filterableVehicleTypes).filter((type) => networkVehicleTypes.has(type) && type !== "ALL"),
 		];
 	}, [vehicles]);
+
+	const availableLineNetworks = useMemo(() => {
+		const lineNetworksMap = new Map<
+			number,
+			{ id: number; name: string; subDescription: string | null }
+		>();
+		network.lines.forEach((line) => {
+			if (line.lineNetwork && !lineNetworksMap.has(line.lineNetwork.id)) {
+				lineNetworksMap.set(line.lineNetwork.id, line.lineNetwork);
+			}
+		});
+		return Array.from(lineNetworksMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+	}, [network.lines]);
 
 	const [searchParams, setSearchParams] = useSearchParams("");
 
@@ -78,6 +91,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 
 	const type = searchParams.get("type") ?? "ALL";
 	const operatorId = searchParams.get("operatorId") ?? "ALL";
+	const lineNetworkId = searchParams.get("lineNetworkId") ?? "ALL";
 	const filter = searchParams.get("filter") ?? "";
 	const sort = searchParams.get("sort") ?? "number-asc";
 
@@ -97,14 +111,26 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 				if (!showArchived && v.archivedAt !== null) return false;
 				if (type?.trim().length && type !== "ALL") {
 					const isVehicleTrain = isTrainNumber(v.number);
+					const effectiveType = !isVehicleTrain && v.type === "UNKNOWN" ? "BUS" : v.type;
 					if (type === "TRAIN" && !isVehicleTrain) return false;
-					if (type !== "TRAIN" && (isVehicleTrain || v.type !== type)) return false;
+					if (type !== "TRAIN" && (isVehicleTrain || effectiveType !== type)) return false;
 				}
 				if (operatorId !== "" && operatorId !== "ALL" && +operatorId !== v.operatorId) return false;
+				if (lineNetworkId !== "" && lineNetworkId !== "ALL") {
+					const vehicleLine = network.lines.find((line) => line.id === v.activity.lineId);
+					if (!vehicleLine?.lineNetwork || vehicleLine.lineNetwork.id !== +lineNetworkId) return false;
+				}
 				if (debouncedFilter === "") return true;
+
+				const lineNumber =
+					typeof v.activity.lineId === "number"
+						? (network?.lines.find((line) => line.id === v.activity.lineId)?.number ?? "")
+						: "";
 				return pattern instanceof RegExp
-					? pattern.test(v.number.toString()) || pattern.test(v.designation ?? "")
-					: v.number.toString().includes(pattern);
+					? pattern.test(v.number.toString()) || pattern.test(v.designation ?? "") || pattern.test(lineNumber)
+					: v.number.toString().includes(pattern) ||
+						(v.designation ?? "").toLowerCase().includes(pattern.toLowerCase()) ||
+						lineNumber.toLowerCase().includes(pattern.toLowerCase());
 			})
 			.sort((a, b) => {
 				if (sort === "activity") {
@@ -171,7 +197,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 
 				return numberSort(a, b);
 			});
-	}, [debouncedFilter, operatorId, showArchived, searchParams, type, sort, vehicles, network]);
+	}, [debouncedFilter, operatorId, lineNetworkId, showArchived, searchParams, type, sort, vehicles, network]);
 
 	const onlineVehicles = useMemo(
 		() => filteredAndSortedVehicles.filter(({ activity }) => typeof activity.lineId !== "undefined"),
@@ -203,45 +229,76 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 							</Label>
 							<div className="flex gap-1">
 								{availableNetworkTypeFilters.length > 2 && (
-									<Select value={type} onValueChange={(newType) => updateSearchParam("type", newType)}>
-										<SelectTrigger aria-label="Type" className="h-10 min-w-[5rem]">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{availableNetworkTypeFilters.map((type) => (
-												<SelectItem key={type} value={type}>
-													{filterableVehicleTypes[type as keyof typeof filterableVehicleTypes]}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									<div className="w-24 shrink-0">
+										<Select value={type} onValueChange={(newType) => updateSearchParam("type", newType)}>
+											<SelectTrigger aria-label="Type" className="h-10 w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{availableNetworkTypeFilters.map((type) => (
+													<SelectItem key={type} value={type}>
+														{filterableVehicleTypes[type as keyof typeof filterableVehicleTypes]}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
 								)}
-								<div className="flex flex-1 gap-1">
+								<div className="flex flex-1 min-w-0 gap-1">
 									{network.operators.length > 0 && (
+										<div className="w-40 shrink-0">
+											<Select
+												value={operatorId}
+												onValueChange={(newOperatorId) => updateSearchParam("operatorId", newOperatorId)}
+											>
+												<SelectTrigger aria-label="Operator" className="h-10 w-full">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="ALL">
+														<span className="text-muted-foreground">Operator</span>
+													</SelectItem>
+													{network.operators
+														.toSorted((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+														.map((operator) => (
+															<SelectItem key={operator.id} value={operator.id.toString()}>
+																{operator.name}
+															</SelectItem>
+														))}
+												</SelectContent>
+											</Select>
+										</div>
+									)}
+									<div className="w-36 shrink-0">
 										<Select
-											value={operatorId}
-											onValueChange={(newOperatorId) => updateSearchParam("operatorId", newOperatorId)}
+											value={lineNetworkId}
+											onValueChange={(newLineNetworkId) => updateSearchParam("lineNetworkId", newLineNetworkId)}
+											disabled={availableLineNetworks.length === 0}
 										>
-											<SelectTrigger aria-label="Operator" className="h-10 min-w-[6rem]">
+											<SelectTrigger aria-label="Line Network" className="h-10 w-full">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="ALL">
-													<span className="text-muted-foreground">Operator</span>
+													<span className="text-muted-foreground">Network</span>
 												</SelectItem>
-												{network.operators
-													.toSorted((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
-													.map((operator) => (
-														<SelectItem key={operator.id} value={operator.id.toString()}>
-															{operator.name}
+												{availableLineNetworks.length === 0 ? (
+													<SelectItem value="NO_NETWORK_DATA" disabled>
+														No network data yet
+													</SelectItem>
+												) : (
+													availableLineNetworks.map((lineNetwork) => (
+														<SelectItem key={lineNetwork.id} value={lineNetwork.id.toString()}>
+															{lineNetwork.name}
 														</SelectItem>
-													))}
+													))
+												)}
 											</SelectContent>
 										</Select>
-									)}
+									</div>
 									<Input
-										className="h-10 flex-1"
-										placeholder="number or designation"
+										className="h-10 min-w-0 flex-1"
+										placeholder="vehicle number, line number or designation"
 										value={searchParams.get("filter") ?? ""}
 										onChange={(e) => updateSearchParam("filter", e.target.value)}
 									/>
