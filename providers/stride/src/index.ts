@@ -31,13 +31,13 @@ console.log("%s ► Connected! Journeys will be published into '%s'.", Temporal.
 // Cache metrics
 let cacheHits = 0;
 let cacheMisses = 0;
-const missedLineRefs = new Set<number>();
+const missedLineRefs = new Set<string>();
 
 /**
  * Build route cache from gtfs_routes API for destination lookup
  * Uses current date to ensure cache is up-to-date
  */
-async function buildRouteCache(): Promise<Map<number, { commercialNumber: string; routeLongName: string; direction: string }>> {
+async function buildRouteCache(): Promise<Map<string, { commercialNumber: string; routeLongName: string; direction: string }>> {
   const today = Temporal.Now.plainDateISO().toString(); // Dynamic date (e.g., "2026-03-05")
   console.log("%s ► Building route cache from gtfs_routes for date: %s", Temporal.Now.instant(), today);
   const routeCache = new Map();
@@ -56,7 +56,7 @@ async function buildRouteCache(): Promise<Map<number, { commercialNumber: string
       if (!Array.isArray(routes) || routes.length === 0) break;
       
       for (const route of routes) {
-        const key = route.line_ref;
+        const key = String(route.line_ref);
         // Keep most recent entry per line_ref
         if (!routeCache.has(key) || route.date > routeCache.get(key).date) {
           routeCache.set(key, {
@@ -98,7 +98,7 @@ function extractDestination(routeLongName: string, direction: string): string | 
 }
 
 // Initialize empty route cache, build in background
-let routeCache = new Map<number, { commercialNumber: string; routeLongName: string; direction: string }>();
+let routeCache = new Map<string, { commercialNumber: string; routeLongName: string; direction: string }>();
 
 /**
  * Log cache metrics periodically
@@ -341,7 +341,7 @@ async function run() {
       const id = `${NETWORK_REF}:${operatorRef}:VehicleTracking:${vehicleRefRaw}`;
       
       // Get route data from cache for commercial number and destination
-      const lineRef = loc.siri_route__line_ref;
+      const lineRef = loc.siri_route__line_ref ? String(loc.siri_route__line_ref) : undefined;
       const routeData = lineRef ? routeCache.get(lineRef) : undefined;
       
       // Track cache metrics
