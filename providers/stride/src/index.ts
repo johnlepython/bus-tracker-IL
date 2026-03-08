@@ -51,6 +51,9 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
     console.log("%s ► Route cache pagination: pageSize=%d, maxPages=%d (up to %d routes)",
       Temporal.Now.instant(), PAGE_SIZE, MAX_PAGES, PAGE_SIZE * MAX_PAGES);
     
+    let totalRoutesFetched = 0;
+    let pagesProcessed = 0;
+    
     for (let page = 0; page < MAX_PAGES; page++) {
       const offset = page * PAGE_SIZE;
       const url = `${STRIDE_API_URL}/gtfs_routes/list?date=${today}&limit=${PAGE_SIZE}&offset=${offset}`;
@@ -58,7 +61,15 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
       const response = await fetch(url);
       const routes = await response.json();
       
-      if (!Array.isArray(routes) || routes.length === 0) break;
+      if (!Array.isArray(routes) || routes.length === 0) {
+        console.log("%s ► Pagination stopped at page %d (no more results)", Temporal.Now.instant(), page);
+        break;
+      }
+      
+      pagesProcessed++;
+      totalRoutesFetched += routes.length;
+      console.log("%s ► Page %d: fetched %d routes, cache size now: %d", 
+        Temporal.Now.instant(), page + 1, routes.length, routeCache.size);
       
       for (const route of routes) {
         const key = String(route.line_ref);
@@ -73,11 +84,18 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
         }
       }
       
-      if (routes.length < PAGE_SIZE) break;
+      if (routes.length < PAGE_SIZE) {
+        console.log("%s ► Pagination stopped at page %d (last page with %d routes)", 
+          Temporal.Now.instant(), pagesProcessed, routes.length);
+        break;
+      }
     }
     
-    console.log("%s ► Route cache built with %d entries", Temporal.Now.instant(), routeCache.size);
+    console.log("%s ► Route cache built with %d unique entries from %d routes across %d pages", 
+      Temporal.Now.instant(), routeCache.size, totalRoutesFetched, pagesProcessed);
   } catch (err) {
+    console.error("%s ► Failed to build route cache: %s", Temporal.Now.instant(), String(err));
+  }
     console.error("%s ► Failed to build route cache: %s", Temporal.Now.instant(), String(err));
   }
   
