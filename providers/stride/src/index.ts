@@ -15,6 +15,8 @@ const {
   REDIS_CHANNEL = "journeys",
   POLL_INTERVAL_MS = "60000",
   CACHE_REFRESH_INTERVAL_MS = "43200000", // 12 hours
+  ROUTE_CACHE_PAGE_SIZE = "15000",
+  ROUTE_CACHE_MAX_PAGES = "20",
 } = process.env;
 
 if (NETWORK_REF === undefined) throw new Error("NETWORK_REF must be defined");
@@ -43,12 +45,15 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
   const routeCache = new Map();
   
   try {
-    const LIMIT = 15000;
-    const MAX_PAGES = 1; // Fetch 1 page = 15k routes (sufficient for lookups)
+    const PAGE_SIZE = Number.parseInt(ROUTE_CACHE_PAGE_SIZE, 10);
+    const MAX_PAGES = Number.parseInt(ROUTE_CACHE_MAX_PAGES, 10);
+    
+    console.log("%s ► Route cache pagination: pageSize=%d, maxPages=%d (up to %d routes)",
+      Temporal.Now.instant(), PAGE_SIZE, MAX_PAGES, PAGE_SIZE * MAX_PAGES);
     
     for (let page = 0; page < MAX_PAGES; page++) {
-      const offset = page * LIMIT;
-      const url = `${STRIDE_API_URL}/gtfs_routes/list?date=${today}&limit=${LIMIT}&offset=${offset}`;
+      const offset = page * PAGE_SIZE;
+      const url = `${STRIDE_API_URL}/gtfs_routes/list?date=${today}&limit=${PAGE_SIZE}&offset=${offset}`;
       
       const response = await fetch(url);
       const routes = await response.json();
@@ -68,7 +73,7 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
         }
       }
       
-      if (routes.length < LIMIT) break;
+      if (routes.length < PAGE_SIZE) break;
     }
     
     console.log("%s ► Route cache built with %d entries", Temporal.Now.instant(), routeCache.size);
