@@ -66,6 +66,19 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 		];
 	}, [vehicles]);
 
+	const availableLineNetworks = useMemo(() => {
+		const lineNetworksMap = new Map<
+			number,
+			{ id: number; name: string; subDescription: string | null }
+		>();
+		network.lines.forEach((line) => {
+			if (line.lineNetwork && !lineNetworksMap.has(line.lineNetwork.id)) {
+				lineNetworksMap.set(line.lineNetwork.id, line.lineNetwork);
+			}
+		});
+		return Array.from(lineNetworksMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+	}, [network.lines]);
+
 	const [searchParams, setSearchParams] = useSearchParams("");
 
 	const updateSearchParam = (key: string, value: string) => {
@@ -78,6 +91,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 
 	const type = searchParams.get("type") ?? "ALL";
 	const operatorId = searchParams.get("operatorId") ?? "ALL";
+	const lineNetworkId = searchParams.get("lineNetworkId") ?? "ALL";
 	const filter = searchParams.get("filter") ?? "";
 	const sort = searchParams.get("sort") ?? "number-asc";
 
@@ -101,6 +115,10 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 					if (type !== "TRAIN" && (isVehicleTrain || v.type !== type)) return false;
 				}
 				if (operatorId !== "" && operatorId !== "ALL" && +operatorId !== v.operatorId) return false;
+				if (lineNetworkId !== "" && lineNetworkId !== "ALL") {
+					const vehicleLine = network.lines.find((line) => line.id === v.activity.lineId);
+					if (!vehicleLine?.lineNetwork || vehicleLine.lineNetwork.id !== +lineNetworkId) return false;
+				}
 				if (debouncedFilter === "") return true;
 				return pattern instanceof RegExp
 					? pattern.test(v.number.toString()) || pattern.test(v.designation ?? "")
@@ -171,7 +189,7 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 
 				return numberSort(a, b);
 			});
-	}, [debouncedFilter, operatorId, showArchived, searchParams, type, sort, vehicles, network]);
+	}, [debouncedFilter, operatorId, lineNetworkId, showArchived, searchParams, type, sort, vehicles, network]);
 
 	const onlineVehicles = useMemo(
 		() => filteredAndSortedVehicles.filter(({ activity }) => typeof activity.lineId !== "undefined"),
@@ -236,6 +254,26 @@ export function NetworkVehicles({ networkId }: Readonly<NetworkVehiclesProps>) {
 															{operator.name}
 														</SelectItem>
 													))}
+											</SelectContent>
+										</Select>
+									)}
+									{availableLineNetworks.length > 0 && (
+										<Select
+											value={lineNetworkId}
+											onValueChange={(newLineNetworkId) => updateSearchParam("lineNetworkId", newLineNetworkId)}
+										>
+											<SelectTrigger aria-label="Line Network" className="h-10 min-w-[8rem]">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="ALL">
+													<span className="text-muted-foreground">Network</span>
+												</SelectItem>
+												{availableLineNetworks.map((lineNetwork) => (
+													<SelectItem key={lineNetwork.id} value={lineNetwork.id.toString()}>
+														{lineNetwork.name}
+													</SelectItem>
+												))}
 											</SelectContent>
 										</Select>
 									)}

@@ -33,6 +33,11 @@ export type Line = {
 	textColor: string | null;
 	archivedAt: string | null;
 	onlineVehicleCount?: number;
+	lineNetwork?: {
+		id: number;
+		name: string;
+		subDescription: string | null;
+	} | null;
 };
 
 export type NetworkWithDetails = Network & {
