@@ -2,6 +2,7 @@ import DraftLog from "draftlog";
 import { createClient } from "redis";
 import { Temporal } from "temporal-polyfill";
 import type { VehicleJourney } from "@bus-tracker/contracts";
+import routeFallbackMap from "./route-fallback-map.json";
 
 DraftLog(console, !process.stdout.isTTY)?.addLineListener(process.stdin);
 
@@ -386,7 +387,9 @@ async function run() {
         line: loc.siri_route__line_ref
           ? {
               ref: `${NETWORK_REF}:Line:${loc.siri_route__line_ref}`,
-              number: routeData?.commercialNumber ?? `Ligne ${loc.siri_route__line_ref}`,
+              number: routeData?.commercialNumber ?? 
+                     (routeFallbackMap as Record<string, string>)[String(loc.siri_route__line_ref)] ?? 
+                     `Ligne ${loc.siri_route__line_ref}`,
               type: "BUS",
             }
           : undefined,
