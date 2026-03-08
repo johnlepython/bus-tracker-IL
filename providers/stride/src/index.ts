@@ -96,8 +96,6 @@ async function buildRouteCache(): Promise<Map<string, { commercialNumber: string
   } catch (err) {
     console.error("%s ► Failed to build route cache: %s", Temporal.Now.instant(), String(err));
   }
-    console.error("%s ► Failed to build route cache: %s", Temporal.Now.instant(), String(err));
-  }
   
   return routeCache;
 }
